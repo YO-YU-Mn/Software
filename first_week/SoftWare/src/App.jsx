@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import Form from './components/Form'
+import LandingPage from './Pages/LandingPage'
 import './App.css'
 
 
@@ -9,11 +9,8 @@ import './App.css'
 function App() {
   
 return (
-    <>
-    <h1>Hello World!</h1>
-    <Form />
-    </>
-  )
+  <LandingPage />
+  );
 }
 
-export default App
+export default App;
