@@ -8,13 +8,18 @@ function NewsSection() {
       <div className="news-list">
         <NewsCard
           title="Midterm Exams Schedule Released"
-          date="Oct 12, 2026"
+          date="March 22, 2026"
           description="Students can now view the midterm schedule from their dashboard."
         />
         <NewsCard
           title="Registration Deadline Reminder"
-          date="Oct 20, 2026"
+          date="March 20, 2026"
           description="Course registration closes at 11:59 PM."
+        />
+         <NewsCard
+          title="Final Exams Schedule Released"
+          date="May 26, 2026"
+          description="best of luck to all students"
         />
       </div>
     </section>

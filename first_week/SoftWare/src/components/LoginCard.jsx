@@ -1,4 +1,13 @@
+import { useNavigate } from "react-router-dom";
+
 function LoginCard() {
+
+      const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <div className="login-card">
       <h2>System Login</h2>
@@ -9,7 +18,10 @@ function LoginCard() {
       <input type="text" placeholder="University ID" />
       <input type="password" placeholder="Password" />
 
-      <button>Login</button>
+      <button onClick={handleLogin}>
+      Login
+      </button>
+
 
       <p className="support-text">
         For account issues, contact IT Support

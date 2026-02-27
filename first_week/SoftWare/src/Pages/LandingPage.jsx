@@ -4,7 +4,9 @@ import HeroSection from "../components/HeroSection";
 import NewsSection from "../components/NewsSection";
 import Footer from "../components/Footer";
 
+
 function LandingPage() {
+  
   return (
     <>
       <TopBanner />
@@ -12,6 +14,7 @@ function LandingPage() {
       <HeroSection />
       <NewsSection />
       <Footer />
+
     </>
   );
 }
