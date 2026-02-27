@@ -1,0 +1,56 @@
+.floating-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* input */
+.floating-input {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+}
+
+/* اللابل */
+.floating-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  padding: 0 5px;
+  color: #777;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+/* لما يبقى فوكس */
+.floating-input:focus + .floating-label {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #0077b6;
+}
+
+/* لو فيه كتابة */
+.floating-input:not(:placeholder-shown) + .floating-label {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #0077b6;
+}
+
+/* زر Show/Hide */
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #4d545b;
+  font-weight: bold;
+  font-size: 0.9em;
+}

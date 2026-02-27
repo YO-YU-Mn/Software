@@ -1,0 +1,57 @@
+.modern-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px; /* زوايا مدورة */
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s; /* للانتقال السلس */
+}
+.modern-button2 {
+  padding: 10px 220px;
+  border: none;
+  border-radius: 6px; /* زوايا مدورة */
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s; /* للانتقال السلس */
+}
+
+/* الأزرار الأساسية (لون مميز) */
+.primary {
+   padding: '10px 20px';
+  background-color: #0b70dd;
+     color: white;
+      border: 'none';
+       borderRadius: '5px';
+        cursor: 'pointer'; 
+}
+
+.primary:hover {
+     background-color: #ff0000;
+     /* أزرق أغمق عند التمرير */
+     transform: scale(0.95);
+}
+
+/* الأزرار الثانوية (لون هادئ) */
+.secondary {
+      padding: '10px 20px';
+  background-color: #6c757d; /* رمادي */
+  color: white;
+   border: 'none';
+       borderRadius: '5px';
+        cursor: 'pointer'; 
+}
+
+.secondary:hover {
+    padding: '10px 20px';
+    background-color: #5a6268;
+  color: white;
+   /* border: 'none';
+       borderRadius: '10px'; */
+        cursor: 'pointer'; 
+        transform: scale(0.95);
+}
+
+/* تأثير الضغط (اختياري) */
+.modern-button:active {
+  transform: scale(0.98); /* تصغير بسيط عند الضغط */
+}
