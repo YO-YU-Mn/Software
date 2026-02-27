@@ -1,11 +1,11 @@
-function Header({ setOpen }) {
+function Header({ open,setOpen }) {
   return (
     <header className="student-header">
-      <button onClick={() => setOpen(true)} className="menu-btn">
+      <button onClick={() => setOpen(!open)} className="menu-btn">
         ☰
       </button>
 
-      <h3>أهلاً Youssef 👋</h3>
+      <h3>Welcome Youssef 👋</h3>
 
       <div className="notification">
         🔔

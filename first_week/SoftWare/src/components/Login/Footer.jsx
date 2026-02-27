@@ -15,7 +15,7 @@ function Footer() {
       <div>
         <h4><a href="">Contact</a></h4>
         <p><a href="">Contact IT</a></p>
-        <p><a href="">About Author</a></p>
+        <p><a href="">About Authors</a></p>
       </div>
 
       <div className="footer-bottom">

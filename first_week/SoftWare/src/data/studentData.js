@@ -6,6 +6,7 @@ const student = {
   graduationYear: 2027,
   gpa: 3.4,
   level: "Level 3",
+  faculty: "Faculty of Science",
 };
 
 export default student;

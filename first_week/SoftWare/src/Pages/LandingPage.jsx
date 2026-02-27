@@ -1,8 +1,8 @@
-import TopBanner from "../components/TopBanner";
-import Header from "../components/Header";
-import HeroSection from "../components/HeroSection";
-import NewsSection from "../components/NewsSection";
-import Footer from "../components/Footer";
+import TopBanner from "../components/Login/TopBanner";
+import Header from "../components/Login/Header";
+import HeroSection from "../components/Login/HeroSection";
+import NewsSection from "../components/Login/NewsSection";
+import Footer from "../components/Login/Footer";
 
 
 function LandingPage() {
@@ -14,7 +14,6 @@ function LandingPage() {
       <HeroSection />
       <NewsSection />
       <Footer />
-
     </>
   );
 }

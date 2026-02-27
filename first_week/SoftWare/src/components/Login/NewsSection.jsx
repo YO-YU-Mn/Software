@@ -21,6 +21,21 @@ function NewsSection() {
           date="May 26, 2026"
           description="best of luck to all students"
         />
+        <NewsCard
+          title="homework 3 deadline extended"
+          date="May 26, 2026"
+          description="the deadline for homework 3 has been extended to June 5, 2026."
+        />
+        <NewsCard
+          title="upcoming maintenance"
+          date="May 26, 2026"
+          description="the system will be down for maintenance on June 1, 2026."
+        />
+        <NewsCard
+          title="keep up the good work"
+          date="May 26, 2026"
+          description="keep up the good work students!"
+        />
       </div>
     </section>
   );

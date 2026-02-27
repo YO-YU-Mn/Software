@@ -8,19 +8,40 @@
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #f4f6f9;
-  color: #1f2937;
+  color: #000000;
   line-height: 1.6;
   width: 100%;
   overflow-x: hidden;
 }
 
 .top-banner {
-  background: #473c3c;
-  color: rgb(56, 44, 44);
+  background: #fffefe;
+  color: rgb(0, 0, 0);
   text-align: center;
-  padding: 3px;
+  padding: 5px;
   font-size: 20px;
+   background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 20px -8px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0 0 20px 20px;
+  margin-left: 0;
+  transition: margin-left 0.3s;
 }
+.top-banner_h1 {
+  font-size: 50px;
+  font-weight: 900;
+    color: #0f172a;
+  font-size: 1.9rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  padding: 0.5rem 1.5rem;
+  border-radius: 40px;
+  border: 1px solid #e2e8f0;
+} 
 
 /* ====== NAVBAR ====== */
 .navbar {
@@ -42,19 +63,19 @@ body {
   font-size: 28px;
   font-weight: 600;
   color: rgb(0, 0, 0); 
-  letter-spacing: 1px;
+  letter-spacing: 10px;
 }
 
 .logo span {
-  color: #38bdf8;
-  font-weight: 400;
+  color: #cbd0d2;
+  font-weight: 40;
   font-size: 16px;
   margin-left: 5px;
 }
 
 .nav-links {
   display: flex;
-  gap: 30px;
+  gap: 3px;
 }
 
 .nav-links a {
@@ -98,6 +119,28 @@ body {
   min-height: 8vh; 
   position: relative;
   overflow: hidden;
+}
+.header_status-dot{
+  background: linear-gradient(135deg, #5392d2, #1e40af);
+  color: rgb(158, 48, 48);
+  padding: 60px 60px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  width: 100%;
+  min-height: 6vh; 
+  position: relative;
+  overflow: hidden;
+
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: #290541;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s infinite;
 }
 
 /* ====== LEFT CONTENT - في بوكس مع أنميشن ====== */
@@ -574,6 +617,156 @@ body {
   box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
   background-color: #f8fafc;
 }
+/* ====== NEWS SECTION - كاردات جنب بعض ====== */
+.news-section {
+  padding: 100px 60px;
+  background-color: #f4f6f9;
+  width: 100%;
+}
+
+.news-section h2 {
+  font-size: 42px;
+  margin-bottom: 20px;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.news-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 2px;
+}
+
+/* يمكنك إضافة subtitle إذا أردت */
+.news-subtitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 50px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* الحاوية الرئيسية للكاردات - شبكة 3 أعمدة */
+.news-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* تنسيق الكارد الواحد (كما هو مع بعض التحسينات) */
+.news-card {
+  background-color: white;
+  padding: 40px 35px;
+  border-radius: 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.news-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 0;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  transition: height 0.3s ease;
+}
+
+.news-card:hover::before {
+  height: 100%;
+}
+
+.news-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.15);
+}
+
+.news-card h3 {
+  margin-bottom: 20px;
+  color: #1e293b;
+  font-size: 26px;
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.news-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: #2563eb;
+  border-radius: 2px;
+}
+
+.news-card small {
+  display: block;
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.news-card p {
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.read-more {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: gap 0.3s;
+}
+
+.read-more:hover {
+  gap: 10px;
+  color: #1d4ed8;
+}
+
+/* استجابة للشاشات الصغيرة */
+@media (max-width: 1024px) {
+  .news-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .news-section {
+    padding: 60px 30px;
+  }
+  .news-list {
+    grid-template-columns: 1fr;
+  }
+  .news-card h3 {
+    font-size: 22px;
+  }
+}
 
 /* ====== ANNOUNCEMENTS SECTION ====== */
 .announcements {
@@ -607,7 +800,7 @@ body {
 
 .announcements-subtitle {
   text-align: center;
-  color: #64748b;
+  color: #363a41;
   font-size: 18px;
   margin-bottom: 50px;
 }
@@ -1851,5 +2044,905 @@ body {
   .student-header h3 {
     font-size: 1rem;
     padding: 0.4rem 1rem;
+  }
+}
+
+
+
+
+/* ====== REGISTRATION PAGE - تسجيل المقررات ====== */
+.registration-page {
+  padding: 40px 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 80px);
+}
+
+/* رأس الصفحة */
+.registration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.registration-header h2 {
+  font-size: 36px;
+  color: #0f172a;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 12px;
+  margin: 0;
+}
+
+.registration-header h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 4px;
+}
+
+/* بطاقة الساعات */
+.hours-card {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  padding: 20px 35px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.hours-icon {
+  background: rgba(255, 255, 255, 0.2);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.hours-info {
+  text-align: right;
+}
+
+.hours-label {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.hours-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hours-max {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-top: 5px;
+}
+
+/* شبكة المواد */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+/* بطاقة المادة */
+.course-card {
+  background: white;
+  border-radius: 24px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: #2563eb;
+}
+
+.course-card.selected {
+  border: 2px solid #2563eb;
+  background: linear-gradient(to bottom, #ffffff, #f0f9ff);
+}
+
+.course-card.selected::before {
+  content: '✓';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 30px;
+  height: 30px;
+  background: #2563eb;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+}
+
+/* رأس البطاقة */
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.course-code {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.course-hours-badge {
+  background: #2563eb;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.course-title {
+  font-size: 22px;
+  color: #0f172a;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.course-instructor {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* جدول المواعيد */
+.schedule-info {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 15px;
+  margin: 20px 0;
+}
+
+.schedule-title {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+}
+
+.schedule-day {
+  background: #2563eb;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+}
+
+.schedule-time {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.schedule-location {
+  color: #64748b;
+  font-size: 13px;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* وصف المادة */
+.course-description {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 15px 0;
+  padding-top: 15px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+/* أزرار البطاقة */
+.course-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-select, .btn-remove {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-select {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-select:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+}
+
+.btn-remove {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-remove:hover {
+  background: #fecaca;
+  transform: translateY(-2px);
+}
+
+.btn-select:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* المنطقة السفلية */
+.registration-footer {
+  position: sticky;
+  bottom: 30px;
+  background: white;
+  border-radius: 30px;
+  padding: 20px 30px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 40px;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 100;
+}
+
+.selected-summary {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.selected-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #475569;
+}
+
+.count-number {
+  background: #2563eb;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.total-hours-footer {
+  background: #f1f5f9;
+  padding: 10px 20px;
+  border-radius: 40px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 40px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* أنيميشن للتحميل */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* رسالة عدم وجود مواد */
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: 30px;
+  border: 2px dashed #e2e8f0;
+}
+
+.empty-state-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  color: #0f172a;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+/* استجابة للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .registration-page {
+    padding: 20px;
+  }
+
+  .registration-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hours-card {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-footer {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .selected-summary {
+    flex-direction: column;
+    gap: 10px;
+  }
+}    
+
+
+
+
+
+
+
+
+/* ====== SCHEDULE PAGE - عرض الجدول ====== */
+.schedule-page {
+  padding: 40px 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #f8fafc;
+  min-height: calc(100vh - 80px);
+}
+
+/* رأس الصفحة */
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.schedule-header h2 {
+  font-size: 36px;
+  color: #0f172a;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 12px;
+  margin: 0;
+}
+
+.schedule-header h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 4px;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-print, .btn-reset {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-print {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-print:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.btn-reset {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.btn-reset:hover {
+  background: #fecaca;
+  transform: translateY(-2px);
+}
+
+/* بطاقة الملخص */
+.schedule-summary {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  border-radius: 30px;
+  padding: 30px;
+  color: white;
+  margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.summary-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.summary-info h4 {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.summary-info p {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* عرض الجدول كبطاقات */
+.schedule-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.schedule-card {
+  background: white;
+  border-radius: 28px;
+  padding: 30px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.schedule-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  border-color: #2563eb;
+}
+
+/* شريط جانبي ملون */
+.schedule-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  opacity: 0.1;
+  border-radius: 0 0 0 100px;
+}
+
+/* رأس البطاقة */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.course-name {
+  font-size: 24px;
+  color: #0f172a;
+  font-weight: 700;
+  margin: 0;
+}
+
+.course-badge {
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* معلومات المادة */
+.course-details {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  background: #f1f5f9;
+  padding: 8px 15px;
+  border-radius: 40px;
+  font-size: 14px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-item i {
+  color: #2563eb;
+}
+
+/* جدول المواعيد */
+.schedule-timetable {
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.timetable-title {
+  font-size: 16px;
+  color: #0f172a;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timetable-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timetable-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.timetable-day {
+  background: #2563eb;
+  color: white;
+  padding: 6px 15px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 90px;
+  text-align: center;
+}
+
+.timetable-time {
+  color: #0f172a;
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.timetable-location {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: auto;
+}
+
+/* معلومات إضافية */
+.course-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* عرض الجدول كأسبوعي (اختياري) */
+.weekly-view {
+  background: white;
+  border-radius: 30px;
+  padding: 30px;
+  margin-top: 40px;
+  border: 1px solid #e2e8f0;
+}
+
+.weekly-view h3 {
+  font-size: 24px;
+  color: #0f172a;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 15px;
+}
+
+.week-day {
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 15px;
+  min-height: 300px;
+}
+
+.day-header {
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 15px;
+}
+
+.day-name {
+  font-size: 18px;
+  color: #0f172a;
+  font-weight: 600;
+  display: block;
+}
+
+.day-date {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.week-course {
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: white;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+  transition: transform 0.2s;
+}
+
+.week-course:hover {
+  transform: scale(1.02);
+}
+
+.week-course strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* حالة عدم وجود بيانات */
+.no-data {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 40px;
+  border: 2px dashed #e2e8f0;
+}
+
+.no-data-icon {
+  font-size: 70px;
+  margin-bottom: 25px;
+  opacity: 0.5;
+}
+
+.no-data h3 {
+  color: #0f172a;
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+.no-data p {
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.btn-register {
+  background: #2563eb;
+  color: white;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 40px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-register:hover {
+  background: #1d4ed8;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+}
+
+/* أنيميشن للطباعة */
+@media print {
+  .schedule-actions,
+  .btn-reset,
+  .weekly-view {
+    display: none;
+  }
+
+  .schedule-page {
+    padding: 0;
+    background: white;
+  }
+
+  .schedule-card {
+    break-inside: avoid;
+    border: 1px solid #ddd;
+    box-shadow: none;
+  }
+}
+
+/* استجابة للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .schedule-page {
+    padding: 20px;
+  }
+
+  .schedule-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .schedule-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    text-align: center;
   }
 }

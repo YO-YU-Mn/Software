@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import Header from "../components/layout/Header";
-import Sidebar from "../components/layout/Sidebar";
+import Header from "../components/student/layout/Header";
+import Sidebar from "../components/student/layout/Sidebar";
 import { useState } from "react";
 
 function StudentLayout() {
@@ -10,7 +10,7 @@ function StudentLayout() {
     <div className="layout">
       <Sidebar open={open} setOpen={setOpen} />
       <div className="content">
-        <Header setOpen={setOpen} />
+        <Header open ={open} setOpen={setOpen} />
         <main className="main-area">
           <Outlet />
         </main>

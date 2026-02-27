@@ -13,7 +13,7 @@ function RegistrationStatusCard({ status }) {
 
       <button
         disabled={status !== "open"}
-        onClick={() => navigate("/student/registration")}
+        onClick={() => navigate("/dashboard/registration")}
       >
         تسجيل المقررات للفصل الحالي
       </button>

@@ -7,8 +7,8 @@ function Sidebar({ open, setOpen }) {
 
       <nav>
         <Link to="/student">Dashboard</Link>
-        <Link to="/student/registration">تسجيل المقررات</Link>
-        <Link to="/student/schedule">جدولي الدراسي</Link>
+        <Link to="/dashboard/registration">تسجيل المقررات</Link>
+        <Link to="/dashboard/schedule">جدولي الدراسي</Link>
         <Link to="/student/results">النتائج</Link>
         <Link to="/student/fees">الرسوم الدراسية</Link>
         <Link to="/student/profile">الملف الشخصي</Link>
