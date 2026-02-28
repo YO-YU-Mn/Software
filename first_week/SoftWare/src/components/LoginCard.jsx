@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 function LoginCard() {
 
       const navigate = useNavigate();
+
  async function handleLogin(event) {
   console.log("Button Clicked");
     event.preventDefault(); 
@@ -19,10 +20,10 @@ function LoginCard() {
     const data = await response.json();
 
     if (response.ok) {
-        alert("Welcome " + (data.studentName || "stusent"));
+        alert("Welcome " + (data.studentName || " student"));
          navigate("/dashboard");
     } else {
-        alert("hello " || data.message); 
+        alert("hello , " + data.message); 
     }
 }
   return (

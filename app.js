@@ -5,6 +5,7 @@ const app =express();
 const cors = require('cors');
 app.use(cors()); 
 app.use(express.json());
+
 mongooose
 .connect("mongodb+srv://me562697_db_user:KCPlhOWMHb2QiNWz@cluster0.dlyjejk.mongodb.net/?appName=Cluster0")
 .then(()=>{
@@ -47,10 +48,10 @@ app.post('/login', async (req, res) => {
 
 
 app.post("/addst" , (req ,res)=>{
-    const student_id="123";
-    const name = "hello to Cs323";
-    const email = "123@gm.co" ;
-    const password ="1234" ;
+    const student_id="156";
+    const name = "mostafa";
+    const email = "1933@gm.co" ;
+    const password ="999" ;
     const department = "math" ;
     const portfolio_skills = ["oop" , "dataBase"];
 
@@ -66,5 +67,23 @@ app.post("/addst" , (req ,res)=>{
     res.send("tmm");
 })
 
+app.post("/addst2" , (req ,res)=>{
+    const student_id= req.body.id;
+    const name = req.body.name;
+    const email = req.body.email ;
+    const password =req.body.password ;
+    const department = req.body.department ;
+    const portfolio_skills = req.body.portfolio_skills;
 
+    const newstu =new Student();
+    newstu.student_id=student_id;
+    newstu.name=name;
+    newstu.email=email;
+    newstu.password=password;
+    newstu.department=department;
+    newstu.portfolio_skills=portfolio_skills;
+    
+    newstu.save();
+    res.send(" add2 tmm");
+})
 
