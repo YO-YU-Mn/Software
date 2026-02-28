@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Admission Portal - Login</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <div class="login-container">
+            <h2>Welcome, Please enter your student code and password</h2>
+            <input type="text" id="code" placeholder="Enter Student Code">
+            <input type="password" id="password" placeholder="Enter Password">
+
+            <button onclick="login()">Login</button>
+
+            <p id="error"></p>
+        </div>
+
+        <script>
+        function login() {
+            let code = document.getElementById("code").value;
+            let password = document.getElementById("password").value;
+
+            if(code === "1234" && password === "0000") {
+                window.location.href = "dashboard.html";
+            } else if (code === "9999" && password === "13") {
+                window.location.href = "admin.html";
+            } else {
+                document.getElementById("error").innerText = "Invalid Code or Password!";
+            }
+        }
+        </script>
+    </body>
+</html>

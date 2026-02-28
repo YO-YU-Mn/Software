@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Student Time-Table</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <div class="dashboard">
+            <h2>Welcome Student</h2>
+
+            <h3>Select Your Courses</h3>
+
+            <div class="courses">
+                <label><input type="checkbox" value="Mathematics"> Mathematics</label>
+                <label><input type="checkbox" value="Physics"> Physics</label>
+                <label><input type="checkbox" value="Programming"> Programming</label>
+                <label><input type="checkbox" value="Database"> Database</label>
+                <label><input type="checkbox" value="Networks"> Networks</label>
+            </div>
+
+            <button onclick="confirmCourses()">Confirm Final Time-Table</button>
+
+            <h3>Selected Courses:</h3>
+            <ul id="result"></ul>
+        </div>
+
+        <script>
+        function confirmCourses() {
+            let checkboxes = document.querySelectorAll("input[type='checkbox']:checked");
+            let result = document.getElementById("result");
+            result.innerHTML = "";
+
+            checkboxes.forEach((course) => {
+                let li = document.createElement("li");
+                li.textContent = course.value;
+                result.appendChild(li);
+            });
+        }
+        </script>
+    </body>
+</html>
