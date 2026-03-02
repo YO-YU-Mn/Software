@@ -6,14 +6,14 @@ import Footer from "../components/Login/Footer";
 
 
 function LandingPage() {
-  
+
   return (
     <>
-      <TopBanner />
-      <Header />
-      <HeroSection />
-      <NewsSection />
-      <Footer />
+      <TopBanner/>
+      <Header/>
+      <HeroSection/>
+      <NewsSection/>
+      <Footer/>
     </>
   );
 }

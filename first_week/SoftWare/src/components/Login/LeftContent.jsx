@@ -10,6 +10,7 @@ function LeftContent() {
         <li>✔ Course Registration</li>
         <li>✔ Academic Transcript</li>
         <li>✔ Smart Schedule Generator</li>
+        <li>✔ Welcome Portal Academy</li>
       </ul>
     </div>
   );

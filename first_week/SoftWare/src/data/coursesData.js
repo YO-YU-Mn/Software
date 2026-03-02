@@ -71,6 +71,15 @@ const courses = [
       { day: "Wednesday", time: "8:00 - 10:00" }
     ]
   },
+   {
+    id: 9,
+    name: "Real Analysis",
+    hours: 3,
+    schedule: [
+      { day: "Monday", time: "10:00 - 12:00" },
+      { day: "Wednesday", time: "12:00 - 2:00" }
+    ]
+  },
   
 ];
 

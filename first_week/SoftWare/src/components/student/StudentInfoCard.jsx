@@ -12,7 +12,6 @@ function StudentInfoCard({ student }) {
         <p><strong>سنة التخرج:</strong> {student.graduationYear}</p>
         <p><strong>GPA:</strong> {student.gpa}</p>
         <p><strong>الكلية:</strong> {student.faculty}</p>
-    
       </div>
     </div>
   );

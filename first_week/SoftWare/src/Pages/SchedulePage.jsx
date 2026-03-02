@@ -4,10 +4,8 @@ import { useNavigate } from "react-router-dom";
 function SchedulePage() {
   const navigate = useNavigate();
 
- 
   const savedData = localStorage.getItem("studentSchedule");
   const saved = savedData ? JSON.parse(savedData) : null;
-  
   
   const coursesList = saved && Array.isArray(saved) ? saved : [];
 
@@ -16,7 +14,6 @@ function SchedulePage() {
     navigate("/dashboard/registration");
   }
 
-  
   if (coursesList.length === 0) {
     return (
       <div className="schedule-page">
@@ -35,6 +32,7 @@ function SchedulePage() {
     );
   }
 
+  
   const totalHours = coursesList.reduce((sum, c) => sum + (c?.hours || 0), 0);
 
   return (
