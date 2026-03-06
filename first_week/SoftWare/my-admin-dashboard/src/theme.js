@@ -1,4 +1,3 @@
-// ─── THEME ────────────────────────────────────────────────────
 export const T = {
   bg:      "#050914",
   surface: "#080f1e",
@@ -16,8 +15,7 @@ export const T = {
   white:   "#ffffff",
 };
 
-export const G  = `linear-gradient(135deg, #0ea5e9, #38bdf8)`;
-export const GV = `linear-gradient(180deg, #0ea5e9, #38bdf8)`;
+export const G = "linear-gradient(135deg, #0ea5e9, #38bdf8)";
 
 export const DEPT_COLORS = {
   Mathematics: "#38bdf8",
@@ -28,7 +26,7 @@ export const DEPT_COLORS = {
 };
 
 export const STATUS_COLORS = {
-  Active:       "#34d399",   // T.green
-  "On Watch":   "#fbbf24",   // T.yellow
-  "Honor Roll": "#38bdf8",   // T.accent
+  Active:       "#34d399",
+  "On Watch":   "#fbbf24",
+  "Honor Roll": "#38bdf8",
 };

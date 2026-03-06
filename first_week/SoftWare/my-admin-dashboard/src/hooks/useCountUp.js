@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-// ─── COUNT-UP ANIMATION ───────────────────────────────────────
 export function useCountUp(target, duration = 900) {
   const [val, setVal] = useState(0);
   const start = useRef(null);
