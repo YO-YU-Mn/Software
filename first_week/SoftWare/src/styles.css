@@ -1,0 +1,1855 @@
+/* ====== GLOBAL ====== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f6f9;
+  color: #1f2937;
+  line-height: 1.6;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.top-banner {
+  background: #473c3c;
+  color: rgb(56, 44, 44);
+  text-align: center;
+  padding: 3px;
+  font-size: 20px;
+}
+
+/* ====== NAVBAR ====== */
+.navbar {
+  background-color: #0f172a;
+  padding: 20px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 600;
+  color: rgb(0, 0, 0); 
+  letter-spacing: 1px;
+}
+
+.logo span {
+  color: #38bdf8;
+  font-weight: 400;
+  font-size: 16px;
+  margin-left: 5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-links a {
+  color: #151616;
+  text-decoration: justify;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  font-size: 16px;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #38bdf8;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.nav-links a:hover {
+  color: #38bdf8;
+}
+/* ====== HERO SECTION - مضبوطة ====== */
+.hero {
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  color: rgb(255, 255, 255);
+  padding: 60px 60px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  width: 100%;
+  min-height: 8vh; 
+  position: relative;
+  overflow: hidden;
+}
+
+/* ====== LEFT CONTENT - في بوكس مع أنميشن ====== */
+.left-content {
+  flex: 0 1 500px; 
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  padding: 40px 45px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  animation: slideInLeft 1s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.left-content:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 35px 60px rgba(0, 0, 0, 0.4);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.left-content h1 {
+  font-size: 48px;
+  margin-bottom: 15px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: rgb(0, 0, 0);
+  position: relative;
+  display: inline-block;
+}
+
+.left-content h1::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 70px;
+  height: 4px;
+  background: #38bdf8;
+  border-radius: 2px;
+  animation: expandWidth 1.5s ease infinite alternate;
+}
+
+.left-content p {
+  font-size: 18px;
+  color: #e2e8f0;
+  max-width: 500px;
+  margin: 20px 0;
+  line-height: 1.7;
+}
+
+.feature-list {
+  list-style: none;
+  margin: 25px 0;
+}
+
+.feature-list li {
+  margin: 15px 0;
+  font-size: 17px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 40px;
+  transition: transform 0.3s ease, background 0.3s ease;
+  animation: fadeInItem 0.8s ease backwards;
+}
+
+.feature-list li:nth-child(1) { animation-delay: 0.2s; }
+.feature-list li:nth-child(2) { animation-delay: 0.4s; }
+.feature-list li:nth-child(3) { animation-delay: 0.6s; }
+
+.feature-list li:hover {
+  transform: translateX(10px);
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.feature-list li::before {
+  content: "✓";
+  background: #2563eb;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+}
+
+.student-number {
+  font-size: 42px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-top: 20px;
+  text-align: center;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  animation: pulse 2s infinite;
+  letter-spacing: 2px;
+}
+
+/* ====== LOGIN CARD - أكبر شوية مع الحفاظ على التنسيق القديم ====== */
+.login-card {
+  background-color: white;
+  padding: 45px 40px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-card h2 {
+  margin-bottom: 30px;
+  color: #1e293b;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  position: relative;
+}
+
+.login-card h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 2px;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  outline: none;
+  transition: 0.2s;
+  font-size: 16px;
+  background: #f8fafc;
+}
+
+.login-card input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  background: white;
+}
+
+.login-card button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+}
+
+.login-card button:hover {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+}
+
+/* ====== NEWS SECTION - كاردات جنب بعض ====== */
+.news {
+  padding: 100px 60px;
+  background-color: #f4f6f9;
+  width: 100%;
+}
+
+.news h2 {
+  font-size: 42px;
+  margin-bottom: 20px;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.news h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 2px;
+}
+
+.news-subtitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 50px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.news-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 30px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* مع الحفاظ على تنسيق الـ news-card القديم بالكامل */
+.news-card {
+  background-color: white;
+  padding: 40px 35px;
+  border-radius: 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.news-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 0;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  transition: height 0.3s ease;
+}
+
+.news-card:hover::before {
+  height: 100%;
+}
+
+.news-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.15);
+}
+
+.news-card h3 {
+  margin-bottom: 20px;
+  color: #1e293b;
+  font-size: 26px;
+  font-weight: 600;
+  position: crelative;
+  padding-bottom: 10px;
+}
+
+.news-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: #2563eb;
+  border-radius: 2px;
+}
+
+.news-card p {
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.read-more {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: gap 0.3s;
+}
+
+.read-more:hover {
+  gap: 10px;
+  color: #1d4ed8;
+}
+
+/* ====== FEATURES SECTION ====== */
+.features {
+  padding: 80px 60px;
+  background-color: white;
+  width: 100%;
+}
+
+.section-title {
+  font-size: 36px;
+  color: #0f172a;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 2px;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 50px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.feature-item {
+  background-color: #f8fafc;
+  padding: 30px;
+  border-radius: 20px;
+  border-left: 6px solid #2563eb;
+  transition: 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.feature-item h3 {
+  color: #1e293b;
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.feature-item p {
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* ====== STATS SECTION ====== */
+.stats {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 60px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  flex-wrap: wrap;
+  gap: 40px;
+  width: 100%;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 20px;
+  min-width: 200px;
+}
+
+.stat-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 10px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.stat-label {
+  font-size: 18px;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ====== CTA SECTION ====== */
+.cta {
+  padding: 100px 60px;
+  text-align: center;
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  color: white;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta::before {
+  content: "🎓";
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 120px;
+  opacity: 0.05;
+  transform: rotate(-10deg);
+}
+
+.cta h2 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.cta p {
+  font-size: 20px;
+  margin-bottom: 40px;
+  color: #cbd5e1;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.cta-button {
+  padding: 18px 45px;
+  font-size: 20px;
+  font-weight: 600;
+  background-color: white;
+  color: #1e3a8a;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: 0.3s;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
+  background-color: #f8fafc;
+}
+
+/* ====== ANNOUNCEMENTS SECTION ====== */
+.announcements {
+  padding: 80px 60px;
+  background-color: #f4f6f9;
+  width: 100%;
+}
+
+.announcements h2 {
+  font-size: 42px;
+  margin-bottom: 20px;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.announcements h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 2px;
+}
+
+.announcements-subtitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 50px;
+}
+
+.announcement-item {
+  background-color: white;
+  padding: 25px 35px;
+  border-radius: 16px;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: 0.3s ease;
+  border-left: 5px solid transparent;
+}
+
+.announcement-item:hover {
+  border-left-color: #2563eb;
+  transform: translateX(5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-date {
+  background-color: #e2e8f0;
+  padding: 5px 15px;
+  border-radius: 30px;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.announcement-title {
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.announcement-badge {
+  background-color: #2563eb;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+/* ====== FOOTER ====== */
+.footer {
+  background-color: #0f172a;
+  color: #f5ffff;
+  text-align: center;
+  padding: 50px 60px;
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+  text-align: left;
+}
+
+.footer-section {
+  flex: 1 1 250px;
+}
+
+.footer-section h4 {
+  color: white;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.footer-section a {
+  color: #94a3b8;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 10px;
+  transition: color 0.3s;
+}
+
+.footer-section a:hover {
+  color: #38bdf8;
+}
+
+.footer-bottom {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid #1e293b;
+  text-align: center;
+  width: 100%;
+}
+
+/* ====== RESPONSIVE DESIGN ====== */
+@media (max-width: 1200px) {
+  .news-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar {
+    padding: 15px 30px;
+  }
+  
+  .hero {
+    padding: 60px 30px;
+  }
+  
+  .hero-text h1 {
+    font-size: 42px;
+  }
+  
+  .login-card {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .hero-text h1::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .hero-text {
+    text-align: center;
+  }
+  
+  .hero-text p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .login-card {
+    max-width: 100%;
+  }
+  
+  .news-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .news-card {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .stats {
+    flex-direction: column;
+    padding: 40px 20px;
+  }
+  
+  .stat-item {
+    width: 100%;
+  }
+  
+  .cta {
+    padding: 60px 20px;
+  }
+  
+  .cta h2 {
+    font-size: 36px;
+  }
+  
+  .announcement-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .announcement-title {
+    margin: 10px 0;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .footer-section h4::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-text h1 {
+    font-size: 32px;
+  }
+  
+  .hero-text p {
+    font-size: 16px;
+  }
+  
+  .login-card {
+    padding: 30px 20px;
+  }
+  
+  .login-card h2 {
+    font-size: 28px;
+  }
+  
+  .news h2 {
+    font-size: 32px;
+  }
+  
+  .news-card {
+    padding: 30px 20px;
+  }
+  
+  .feature-item {
+    padding: 20px;
+  }
+  
+  .stat-number {
+    font-size: 36px;
+  }
+  
+  .stat-label {
+    font-size: 16px;
+  }
+}
+
+/* الأنميشن الجديدة */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes expandWidth {
+  from {
+    width: 70px;
+    opacity: 0.7;
+  }
+  to {
+    width: 110px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInItem {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(56, 189, 248, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+  }
+}
+
+/* للشاشات الصغيرة */
+@media (max-width: 992px) {
+  .hero {
+    padding: 40px 30px;
+  }
+  
+  .left-content {
+    flex: 0 1 100%;
+    max-width: 550px;
+    margin: 0 auto;
+  }
+  
+  .left-content h1 {
+    font-size: 38px;
+  }
+}
+
+
+/* ========================= */
+/* ===== STUDENT PAGE ===== */
+/* ========================= */
+
+.student-sidebar {
+  position: fixed;
+  left: -260px;
+  top: 0;
+  width: 250px;
+  height: 100vh;
+  background: #0f172a;
+  color: white;
+  padding: 25px;
+  transition: 0.3s ease;
+  z-index: 2000;
+}
+
+.student-sidebar.open {
+  left: 0;
+}
+
+.student-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 30px;
+}
+
+.student-sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.student-sidebar a:hover {
+  color: #38bdf8;
+  transform: translateX(5px);
+}
+
+.student-header {
+  background: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.notification {
+  position: relative;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  padding: 3px 7px;
+  border-radius: 50%;
+}
+
+.student-card {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  margin-bottom: 25px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+  transition: 0.3s;
+}
+
+.student-card:hover {
+  transform: translateY(-6px);
+}
+
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.registration-card button {
+  margin-top: 15px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.registration-card button:hover {
+  transform: translateY(-2px);
+}
+
+.registration-card button:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+.status.open {
+  color: green;
+  font-weight: 600;
+}
+
+.status.closed {
+  color: red;
+  font-weight: 600;
+}
+
+/* ========================= */
+/* ===== STUDENT PAGE ===== */
+/* ========================= */
+
+/* الحاوية الرئيسية للوحة التحكم */
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  background-color: #f8fafc;
+}
+
+/* البطاقات العامة في صفحة الطالب */
+.student-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(203, 213, 225, 0.4);
+}
+
+.student-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 30px -10px rgba(0, 35, 85, 0.15);
+}
+
+.student-card h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a; /* نفس لون الهيدر */
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.student-card h2::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  border-radius: 4px;
+}
+
+/* بطاقة معلومات الطالب */
+.info-card .student-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 1.5rem;
+}
+
+.info-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.info-card strong {
+  color: #0f172a;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #4b5563;
+}
+
+/* بطاقة حالة التسجيل */
+.registration-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border-radius: 30px;
+  display: inline-block;
+  margin: 1rem 0 1.5rem;
+}
+
+.status.open {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.status.closed {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.registration-card button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.9rem 1.8rem;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 280px;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.registration-card button:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  transform: scale(1.02);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.registration-card button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* قسم الأخبار في لوحة الطالب */
+.news-section {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* بطاقة الخبر الخاصة بالطالب */
+.news-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  border-left: 5px solid #2563eb;
+  text-align: left;
+}
+
+.news-card:hover {
+  box-shadow: 0 12px 24px -8px rgba(0, 35, 85, 0.15);
+  border-left-color: #1e40af;
+}
+
+.news-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.news-card small {
+  display: inline-block;
+  background-color: #e2e8f0;
+  padding: 0.25rem 1rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+
+.news-card p {
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* تصميم السايدبار (القائمة الجانبية) */
+.student-sidebar {
+  background: linear-gradient(180deg, #0f172a 0%, #1a2639 100%);
+  color: white;
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 2rem 1rem;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.student-sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #334155;
+  margin-bottom: 2rem;
+  color: #f0f4fa;
+  letter-spacing: 0.5px;
+}
+
+.student-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.student-sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.student-sidebar a:hover {
+  background-color: #1e293b;
+  color: white;
+}
+
+.student-sidebar a.active {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* هيدر الطالب */
+.student-header {
+  background-color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #e2e8f0;
+  margin-left: 0; /* هيتغير مع الـ sidebar */
+}
+
+.student-header .menu-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.student-header h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.notification {
+  position: relative;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* منطقة المحتوى الرئيسية مع السايدبار */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.content {
+  flex: 1;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+/* لما السايدبار مفتوح نزود مسافة للمحتوى */
+.student-sidebar.open + .content {
+  margin-left: 260px;
+}
+
+@media (min-width: 768px) {
+  .student-sidebar {
+    transform: translateX(0);
+  }
+  .content {
+    margin-left: 260px;
+  }
+  .student-header .menu-btn {
+    display: none;
+  }
+}
+
+.main-area {
+  padding: 2rem;
+}
+ 
+
+/* ========================= */
+/* ===== STUDENT PAGE ===== */
+/* ========================= */
+
+/* الحاوية الرئيسية للوحة تحكم الطالب */
+.dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.8rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+}
+
+/* بطاقة الطالب العامة */
+.student-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 2rem 1.8rem;
+  box-shadow: 0 20px 35px -8px rgba(0, 35, 85, 0.15),
+              0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(203, 213, 225, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.student-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, #2563eb, #38bdf8, #2563eb);
+  background-size: 200% 100%;
+  animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.student-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 45px -12px rgba(37, 99, 235, 0.25),
+              0 0 0 1px rgba(37, 99, 235, 0.2) inset;
+}
+
+.student-card h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.student-card h2::before {
+  
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
+}
+
+/* بطاقة معلومات الطالب */
+.info-card {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+}
+
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem 1.8rem;
+  margin-top: 1rem;
+}
+
+.student-grid p {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  background: rgba(241, 245, 249, 0.7);
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  transition: 0.2s;
+  font-size: 0.95rem;
+  color: #1e293b;
+  backdrop-filter: blur(4px);
+}
+
+.student-grid p:hover {
+  background: white;
+  border-color: #2563eb;
+  transform: translateX(5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.student-grid strong {
+  color: #2563eb;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* بطاقة حالة التسجيل */
+.registration-card {
+  text-align: center;
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status {
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 0.7rem 2rem;
+  border-radius: 40px;
+  display: inline-block;
+  margin: 1.5rem 0 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.status.open {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.status.closed {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.registration-card button {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+  max-width: 300px;
+  box-shadow: 0 8px 20px -5px rgba(37, 99, 235, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.registration-card button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.registration-card button:hover::after {
+  left: 100%;
+}
+
+.registration-card button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  transform: scale(1.05);
+  box-shadow: 0 15px 25px -5px rgba(37, 99, 235, 0.5);
+}
+
+.registration-card button:disabled {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  box-shadow: none;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* قسم الأخبار */
+.news-section {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.8rem;
+  margin-top: 1rem;
+}
+
+/* بطاقة الخبر */
+.news-card {
+  background: white;
+  border-radius: 24px;
+  padding: 1.8rem;
+  box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.1);
+  transition: 0.3s;
+  border-left: 8px solid #2563eb;
+  border-right: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.news-card::after {
+  content: '📢';
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  font-size: 60px;
+  opacity: 0.1;
+  transform: rotate(-15deg);
+}
+
+.news-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 40px -12px rgba(37, 99, 235, 0.2);
+  border-left-width: 8px;
+}
+
+.news-card h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.8rem;
+  padding-right: 2rem;
+}
+
+.news-card small {
+  display: inline-block;
+  background: #e2e8f0;
+  padding: 0.3rem 1.2rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 1rem;
+  letter-spacing: 0.3px;
+}
+
+.news-card p {
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* السايدبار */
+.student-sidebar {
+  position: fixed;
+  left: -280px;
+  top: 0;
+  width: 260px;
+  height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #1a2639 100%);
+  color: white;
+  padding: 2rem 1.2rem;
+  transition: left 0.3s ease;
+  z-index: 2000;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.2);
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+}
+
+.student-sidebar.open {
+  left: 0;
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+  margin-bottom: 2rem;
+  color: white;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.student-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.student-sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 0.9rem 1.2rem;
+  border-radius: 16px;
+  transition: all 0.3s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.student-sidebar a:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: white;
+  transform: translateX(8px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.student-sidebar a.active {
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: white;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+}
+
+/* الهيدر */
+.student-header {
+  background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 20px -8px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0 0 20px 20px;
+  margin-left: 0;
+  transition: margin-left 0.3s;
+}
+
+.student-header .menu-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #2563eb;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  transition: 0.2s;
+}
+
+.student-header .menu-btn:hover {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+.student-header h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 0.5rem 1.5rem;
+  border-radius: 40px;
+  border: 1px solid #e2e8f0;
+}
+
+.notification {
+  position: relative;
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.notification:hover {
+  transform: scale(1.1);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+/* المحتوى الرئيسي */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.content {
+  flex: 1;
+  transition: margin-left 0.3s;
+}
+
+.student-sidebar.open + .content {
+  margin-left: 260px;
+}
+
+@media (min-width: 992px) {
+  .student-sidebar {
+    left: 0;
+  }
+  .content {
+    margin-left: 260px;
+  }
+  .student-header .menu-btn {
+    display: none;
+  }
+}
+
+.main-area {
+  padding: 2rem;
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* تحسين للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .student-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .student-card {
+    padding: 1.5rem;
+  }
+  
+  .student-card h2 {
+    font-size: 1.4rem;
+  }
+  
+  .news-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .main-area {
+    padding: 1rem;
+  }
+  
+  .student-header h3 {
+    font-size: 1rem;
+    padding: 0.4rem 1rem;
+  }
+}
