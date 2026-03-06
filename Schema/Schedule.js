@@ -7,8 +7,8 @@ const Schema = mongoose.Schema;
 // Schedule Schema 
 const ScheduleSchema = new Schema({
     schedule_id : {type : String, required : true , unique : true},
-    course_id : {type : String, required : true , unique : true},
-    staff_id : {type : String, required : true , unique : true},
+    course_id : {type : String, required : true },
+    staff_id : {type : String, required : true },
     day : {type : String , required : true},
     start_time : {type : String , required : true},
     end_time : {type : String , required : true},
