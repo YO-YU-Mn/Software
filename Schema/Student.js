@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 
 // we create a schema form mongoose
-const Schema = mongoose.Schema;
+const Schema =  mongoose.Schema;
 
 // Student Schema
 const StudentSchema = new Schema({
@@ -10,7 +10,7 @@ const StudentSchema = new Schema({
     name : {type : String , required : true},
     email : {type : String , required : true , unique : true},
     password : {type : String , required : true},
-    department : String,
+    department : {type : String },
     portfolio_skills : [String]
 })
 
