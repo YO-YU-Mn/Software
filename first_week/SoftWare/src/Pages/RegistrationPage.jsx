@@ -92,7 +92,7 @@ function RegistrationPage() {
           <div className="courses-grid">
             {coursesList.map(course => (
               <div 
-                key={course?.id || Math.random()} 
+                key={course?.id || Math.random()  } 
                 className={`course-card ${selectedCourses.find(c => c?.id === course?.id) ? 'selected' : ''}`}
               >
                 <div className="course-header">
