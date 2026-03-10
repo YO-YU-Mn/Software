@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { T, G, DEPT_COLORS } from "../theme";
+import { useTheme } from "../context/ThemeContext";
+import { DEPT_COLORS } from "../theme";
 import { DetailPanel } from "../components/DetailPanel";
 
 export function StudentsList({ students, setPage }) {
+  const { theme } = useTheme();
   const [filterCourse, setFilterCourse] = useState("");
   const [search, setSearch]             = useState("");
   const [panel, setPanel]               = useState(null);
@@ -13,43 +15,60 @@ export function StudentsList({ students, setPage }) {
     (!search || s.name.toLowerCase().includes(search.toLowerCase()) || s.email.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const sel = { background:T.card, border:`1px solid ${T.border}`, color:T.text, padding:"8px 12px", borderRadius:8, fontSize:13, cursor:"pointer", outline:"none" };
-
   return (
-    <div style={{ padding:28, flex:1, overflowY:"auto" }}>
-      <button onClick={()=>setPage("dashboard")} style={{ background:T.card, color:T.muted, border:`1px solid ${T.border}`, padding:"7px 14px", borderRadius:7, cursor:"pointer", fontSize:12, marginBottom:22 }}>← Back</button>
-      <h1 style={{ margin:"0 0 22px", fontSize:22, fontWeight:800, color:T.white }}>Students</h1>
+    <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
+      <button onClick={()=>setPage("dashboard")} className="btn-back" style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}>
+        ← Back
+      </button>
+      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>Students</h1>
 
-      <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:20 }}>
-        <div style={{ display:"flex", gap:10, marginBottom:18, flexWrap:"wrap", alignItems:"center" }}>
-          <input placeholder="Search name or email…" value={search} onChange={e=>setSearch(e.target.value)} style={{ ...sel, flex:1, minWidth:180 }} />
-          <select value={filterCourse} onChange={e=>setFilterCourse(e.target.value)} style={sel}>
+      <div className="card" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}>
+        <div className="flex gap-2 mb-4 flex-wrap items-center">
+          <input
+            placeholder="Search name or email…"
+            value={search}
+            onChange={e=>setSearch(e.target.value)}
+            className="input-field flex-1 min-w-44"
+            style={{ background: theme.card, borderColor: theme.border, color: theme.text }}
+          />
+          <select
+            value={filterCourse}
+            onChange={e=>setFilterCourse(e.target.value)}
+            className="input-field"
+            style={{ background: theme.card, borderColor: theme.border, color: theme.text }}
+          >
             <option value="">All Courses</option>
             {courseOptions.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <div style={{ background:G, color:"#fff", padding:"8px 16px", borderRadius:8, fontSize:13, fontWeight:700 }}>{filtered.length} student{filtered.length!==1?"s":""}</div>
+          <div className="btn-primary px-4 py-2 text-sm font-bold rounded" style={{ background: `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})`, color: "#fff" }}>
+            {filtered.length} student{filtered.length!==1?"s":""}
+          </div>
         </div>
 
-        <table style={{ width:"100%", borderCollapse:"collapse" }}>
+        <table className="table">
           <thead>
-            <tr style={{ borderBottom:`1px solid ${T.border}` }}>
+            <tr>
               {["ID","Name","Email","Course","Dept","GPA"].map(h => (
-                <th key={h} style={{ padding:"8px 12px", color:T.muted, fontSize:11, fontWeight:600, textAlign:"left", textTransform:"uppercase", letterSpacing:1 }}>{h}</th>
+                <th key={h} style={{ color: theme.muted, borderColor: theme.border }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.map(s => (
-              <tr key={s.id} style={{ borderBottom:`1px solid ${T.border}20`, cursor:"pointer", transition:"background 0.12s" }}
+              <tr
+                key={s.id}
                 onClick={()=>setPanel(s)}
-                onMouseEnter={e=>e.currentTarget.style.background=T.surface}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <td style={{ padding:"11px 12px", color:T.muted, fontSize:11, fontFamily:"monospace" }}>{s.id}</td>
-                <td style={{ padding:"11px 12px", color:T.text, fontWeight:600, fontSize:13 }}>{s.name}</td>
-                <td style={{ padding:"11px 12px", color:T.muted, fontSize:12 }}>{s.email}</td>
-                <td style={{ padding:"11px 12px", fontSize:12 }}><span style={{ color:DEPT_COLORS[s.dept]||T.accent, fontWeight:500 }}>{s.course}</span></td>
-                <td style={{ padding:"11px 12px", color:T.muted, fontSize:12 }}>{s.dept}</td>
-                <td style={{ padding:"11px 12px", fontWeight:700, fontSize:13, color:s.gpa>=3.7?T.green:s.gpa>=3.0?T.accent:T.yellow }}>{s.gpa}</td>
+                className="cursor-pointer"
+                onMouseEnter={e=>e.currentTarget.style.background = theme.surface}
+                onMouseLeave={e=>e.currentTarget.style.background = "transparent"}
+                style={{ borderColor: `${theme.border}20` }}
+              >
+                <td className="mono" style={{ color: theme.muted, fontSize: 11 }}>{s.id}</td>
+                <td style={{ color: theme.text, fontWeight: 600, fontSize: 13 }}>{s.name}</td>
+                <td style={{ color: theme.muted, fontSize: 12 }}>{s.email}</td>
+                <td style={{ fontSize: 12 }}><span style={{ color: DEPT_COLORS[s.dept] || theme.accent, fontWeight: 500 }}>{s.course}</span></td>
+                <td style={{ color: theme.muted, fontSize: 12 }}>{s.dept}</td>
+                <td style={{ fontWeight: 700, fontSize: 13, color: s.gpa>=3.7 ? theme.green : s.gpa>=3.0 ? theme.accent : theme.yellow }}>{s.gpa}</td>
               </tr>
             ))}
           </tbody>

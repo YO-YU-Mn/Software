@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { T, G, DEPT_COLORS } from "../theme";
+import { useTheme } from "../context/ThemeContext";
+import { DEPT_COLORS } from "../theme";
 import { DetailPanel } from "../components/DetailPanel";
 
 export function CoursesList({ courses, setCourses, enrollments, setPage }) {
+  const { theme } = useTheme();
+  const G = `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})`;
+
   const [showAdd, setShowAdd] = useState(false);
   const [panel, setPanel]     = useState(null);
   const [form, setForm]       = useState({ name:"", instructor:"", credit:"", capacity:"" });
@@ -25,62 +29,73 @@ export function CoursesList({ courses, setCourses, enrollments, setPage }) {
     }
   };
 
-  const inp = { background:T.surface, border:`1px solid ${T.border}`, color:T.text, padding:"9px 12px", borderRadius:8, fontSize:13, outline:"none", width:"100%", boxSizing:"border-box" };
-
   return (
-    <div style={{ padding:28, flex:1, overflowY:"auto" }}>
-      <button onClick={()=>setPage("dashboard")} style={{ background:T.card, color:T.muted, border:`1px solid ${T.border}`, padding:"7px 14px", borderRadius:7, cursor:"pointer", fontSize:12, marginBottom:22 }}>← Back</button>
+    <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
+      <button onClick={()=>setPage("dashboard")} className="btn-back" style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}>
+        ← Back
+      </button>
 
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
-        <h1 style={{ margin:0, fontSize:22, fontWeight:800, color:T.white }}>Courses</h1>
-        <button onClick={()=>setShowAdd(!showAdd)} style={{ background:G, color:"#fff", border:"none", padding:"9px 20px", borderRadius:8, cursor:"pointer", fontWeight:600, fontSize:13 }}>+ Add Course</button>
+      <div className="flex justify-between items-center mb-5">
+        <h1 className="m-0 text-3xl font-extrabold" style={{ color: theme.white }}>Courses</h1>
+        <button onClick={()=>setShowAdd(!showAdd)} className="btn-primary px-5 py-2 text-sm" style={{ background: G }}>+ Add Course</button>
       </div>
 
       {showAdd && (
-        <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:20, marginBottom:22 }}>
-          <div style={{ fontWeight:600, color:T.white, marginBottom:14, fontSize:14 }}>New Course</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+        <div className="card mb-5" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}>
+          <div className="font-semibold mb-3" style={{ color: theme.white, fontSize: 14 }}>New Course</div>
+          <div className="grid grid-cols-2 gap-2 mb-3">
             {[["name","Course Name"],["instructor","Instructor"],["credit","Credit Hours"],["capacity","Max Capacity"]].map(([k,pl]) => (
-              <input key={k} type={k==="credit"||k==="capacity"?"number":"text"} placeholder={pl}
-                value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} style={inp} />
+              <input
+                key={k}
+                type={k==="credit"||k==="capacity"?"number":"text"}
+                placeholder={pl}
+                value={form[k]}
+                onChange={e=>setForm({...form,[k]:e.target.value})}
+                className="input-field"
+                style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}
+              />
             ))}
           </div>
-          <div style={{ display:"flex", gap:8 }}>
-            <button onClick={handleAdd} style={{ background:T.green, color:T.bg, border:"none", padding:"8px 18px", borderRadius:7, cursor:"pointer", fontWeight:700 }}>Save</button>
-            <button onClick={()=>setShowAdd(false)} style={{ background:T.border, color:T.text, border:"none", padding:"8px 18px", borderRadius:7, cursor:"pointer" }}>Cancel</button>
+          <div className="flex gap-2">
+            <button onClick={handleAdd} className="btn" style={{ background: theme.green, color: theme.bg, padding: "8px 18px", fontWeight: 700 }}>Save</button>
+            <button onClick={()=>setShowAdd(false)} className="btn" style={{ background: theme.border, color: theme.text, padding: "8px 18px" }}>Cancel</button>
           </div>
         </div>
       )}
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 }}>
+      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
         {liveCourses.map(c => {
           const pct   = Math.round((c.students/c.capacity)*100);
-          const color = DEPT_COLORS[c.dept] || T.accent;
+          const color = DEPT_COLORS[c.dept] || theme.accent;
           const full  = c.students >= c.capacity;
           return (
-            <div key={c.id} onClick={()=>setPanel(c)}
-              style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:20, cursor:"pointer", transition:"all 0.2s" }}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor=color+"55";e.currentTarget.style.transform="translateY(-4px)";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.transform="none";}}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+            <div
+              key={c.id}
+              onClick={()=>setPanel(c)}
+              className="card cursor-pointer"
+              style={{ background: theme.card, borderColor: theme.border, padding: 20 }}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor = color+"55"; e.currentTarget.style.transform = "translateY(-4px)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor = theme.border; e.currentTarget.style.transform = "none";}}
+            >
+              <div className="flex justify-between items-start mb-3">
                 <div>
-                  <div style={{ fontWeight:700, fontSize:14, color:T.white, marginBottom:3 }}>{c.name}</div>
-                  <div style={{ fontSize:12, color }}>{c.instructor}</div>
+                  <div className="font-bold" style={{ color: theme.white, fontSize: 14, marginBottom: 3 }}>{c.name}</div>
+                  <div className="text-sm" style={{ color }}>{c.instructor}</div>
                 </div>
-                <span style={{ background:color+"20", color, padding:"3px 9px", borderRadius:20, fontSize:11, fontWeight:600 }}>{c.credit} cr.</span>
+                <span className="px-2 py-1 rounded-full text-xs font-semibold" style={{ background: `${color}20`, color }}>{c.credit} cr.</span>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
-                {[["Enrolled",c.students,T.accent],["Capacity",`${c.students}/${c.capacity}`,full?T.red:T.green]].map(([l,v,cl]) => (
-                  <div key={l} style={{ background:T.surface, borderRadius:8, padding:"9px 10px", textAlign:"center" }}>
-                    <div style={{ fontSize:10, color:T.muted, marginBottom:3, textTransform:"uppercase", letterSpacing:1 }}>{l}</div>
-                    <div style={{ fontSize:18, fontWeight:800, color:cl }}>{v}</div>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                {[["Enrolled",c.students,theme.accent],["Capacity",`${c.students}/${c.capacity}`,full?theme.red:theme.green]].map(([l,v,cl]) => (
+                  <div key={l} className="text-center p-3 rounded" style={{ background: theme.surface }}>
+                    <div className="text-xs uppercase tracking-wider" style={{ color: theme.muted, marginBottom: 3 }}>{l}</div>
+                    <div className="text-lg font-extrabold" style={{ color: cl }}>{v}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ height:4, background:T.border, borderRadius:4 }}>
-                <div style={{ width:`${Math.min(pct,100)}%`, height:"100%", background:pct>=100?T.red:pct>=80?T.yellow:color, borderRadius:4 }} />
+              <div className="progress-bar" style={{ background: theme.border }}>
+                <div className="progress-fill" style={{ width: `${Math.min(pct,100)}%`, background: pct>=100 ? theme.red : pct>=80 ? theme.yellow : color }} />
               </div>
-              {full && <div style={{ background:T.red+"15", color:T.red, padding:6, borderRadius:7, marginTop:10, fontSize:11, textAlign:"center", fontWeight:700 }}>⚠ FULL</div>}
+              {full && <div className="mt-2 text-center text-xs font-bold py-1 rounded" style={{ background: `${theme.red}15`, color: theme.red }}>⚠ FULL</div>}
             </div>
           );
         })}

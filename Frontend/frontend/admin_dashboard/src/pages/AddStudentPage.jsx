@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { T, G } from "../theme";
+import { useTheme } from "../context/ThemeContext";
 
 export function AddStudentPage({ onBack, registeredStudents, setRegisteredStudents, enrollments, setEnrollments, courses }) {
+  const { theme } = useTheme();
+  const G = `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})`;
+
   const [tab, setTab]           = useState("register");
   const [regForm, setRegForm]   = useState({ name:"", email:"", code:"", dept:"", year:"" });
   const [regMsg, setRegMsg]     = useState({ type:"", text:"" });
@@ -53,85 +56,120 @@ export function AddStudentPage({ onBack, registeredStudents, setRegisteredStuden
     setEnrollForm({studentCode:"",courseId:""}); setFound(null);
   };
 
-  const inp = { background:T.surface, border:`1px solid ${T.border}`, color:T.text, padding:"10px 13px", borderRadius:8, fontSize:13, outline:"none", width:"100%", boxSizing:"border-box" };
-  const lbl = { display:"block", color:T.muted, fontSize:11, fontWeight:600, marginBottom:5, textTransform:"uppercase", letterSpacing:1 };
   const Msg = ({m}) => m.text
-    ? <div style={{ background:(m.type==="ok"?T.green:T.red)+"18", color:m.type==="ok"?T.green:T.red, border:`1px solid ${(m.type==="ok"?T.green:T.red)}35`, borderRadius:8, padding:"10px 13px", marginBottom:14, fontSize:13, fontWeight:600 }}>{m.text}</div>
+    ? <div className={`message ${m.type==="ok" ? "message-success" : "message-error"}`}
+        style={{ background: m.type==="ok" ? `${theme.green}18` : `${theme.red}18`, color: m.type==="ok" ? theme.green : theme.red, borderColor: m.type==="ok" ? `${theme.green}35` : `${theme.red}35` }}>
+        {m.text}
+      </div>
     : null;
 
   return (
-    <div style={{ padding:28, flex:1, overflowY:"auto" }}>
-      <button onClick={onBack} style={{ background:T.card, color:T.muted, border:`1px solid ${T.border}`, padding:"7px 14px", borderRadius:7, cursor:"pointer", fontSize:12, marginBottom:22 }}>← Back</button>
-      <h1 style={{ margin:"0 0 22px", fontSize:22, fontWeight:800, color:T.white }}>Student Registration</h1>
+    <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
+      <button onClick={onBack} className="btn-back" style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}>← Back</button>
+      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>Student Registration</h1>
 
       {/* Main Tabs */}
-      <div style={{ display:"flex", gap:0, marginBottom:26, background:T.card, borderRadius:10, border:`1px solid ${T.border}`, width:"fit-content" }}>
+      <div className="flex gap-0 mb-6" style={{ background: theme.card, borderRadius: 10, border: `1px solid ${theme.border}`, width: "fit-content" }}>
         {[["register","⊕ New Student"],["enroll","▣ Manage Enrollments"]].map(([id,label]) => (
-          <button key={id} onClick={()=>setTab(id)} style={{ padding:"10px 26px", border:"none", borderRadius:9, cursor:"pointer", fontSize:13, fontWeight:600, background:tab===id?G:"transparent", color:tab===id?"#fff":T.muted, transition:"all 0.18s" }}>{label}</button>
+          <button
+            key={id}
+            onClick={()=>setTab(id)}
+            className="btn"
+            style={{
+              padding: "10px 26px",
+              borderRadius: 9,
+              background: tab===id ? G : "transparent",
+              color: tab===id ? "#fff" : theme.muted,
+            }}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
       {/* TAB 1: REGISTER */}
       {tab==="register" && (
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
-          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:26 }}>
-            <div style={{ fontWeight:700, color:T.white, fontSize:15, marginBottom:18 }}>Student Information</div>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Student Information</div>
             <Msg m={regMsg} />
-            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            <div className="flex flex-col gap-3">
               {[["name","Full Name *","text",""],["email","Email *","email","student@sci.edu.eg"]].map(([k,l,t,ph]) => (
                 <div key={k}>
-                  <label style={lbl}>{l}</label>
-                  <input type={t} placeholder={ph} value={regForm[k]} onChange={e=>setRegForm(f=>({...f,[k]:e.target.value}))} style={inp}
-                    onFocus={e=>e.target.style.borderColor=T.accent} onBlur={e=>e.target.style.borderColor=T.border} />
+                  <label className="input-label" style={{ color: theme.muted }}>{l}</label>
+                  <input
+                    type={t}
+                    placeholder={ph}
+                    value={regForm[k]}
+                    onChange={e=>setRegForm(f=>({...f,[k]:e.target.value}))}
+                    className="input-field"
+                    style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
+                    onFocus={e=>e.target.style.borderColor=theme.accent}
+                    onBlur={e=>e.target.style.borderColor=theme.border}
+                  />
                 </div>
               ))}
               <div>
-                <label style={lbl}>Student Code * <span style={{ color:T.accent, fontWeight:400, textTransform:"none", letterSpacing:0 }}>(unique ID)</span></label>
-                <input placeholder="SC-2025-001" value={regForm.code} onChange={e=>setRegForm(f=>({...f,code:e.target.value}))}
-                  style={{ ...inp, fontFamily:"monospace", fontSize:14, letterSpacing:1 }}
-                  onFocus={e=>e.target.style.borderColor=T.accent} onBlur={e=>e.target.style.borderColor=T.border} />
+                <label className="input-label" style={{ color: theme.muted }}>Student Code * <span style={{ color: theme.accent, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(unique ID)</span></label>
+                <input
+                  placeholder="SC-2025-001"
+                  value={regForm.code}
+                  onChange={e=>setRegForm(f=>({...f,code:e.target.value}))}
+                  className="input-field mono"
+                  style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text, fontSize: 14, letterSpacing: 1 }}
+                  onFocus={e=>e.target.style.borderColor=theme.accent}
+                  onBlur={e=>e.target.style.borderColor=theme.border}
+                />
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label style={lbl}>Department *</label>
-                  <select value={regForm.dept} onChange={e=>setRegForm(f=>({...f,dept:e.target.value}))} style={inp}>
+                  <label className="input-label" style={{ color: theme.muted }}>Department *</label>
+                  <select
+                    value={regForm.dept}
+                    onChange={e=>setRegForm(f=>({...f,dept:e.target.value}))}
+                    className="input-field"
+                    style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
+                  >
                     <option value="">Select…</option>
                     {["Mathematics","Physics","Chemistry","Biology","Languages"].map(d=><option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={lbl}>Year *</label>
-                  <select value={regForm.year} onChange={e=>setRegForm(f=>({...f,year:e.target.value}))} style={inp}>
+                  <label className="input-label" style={{ color: theme.muted }}>Year *</label>
+                  <select
+                    value={regForm.year}
+                    onChange={e=>setRegForm(f=>({...f,year:e.target.value}))}
+                    className="input-field"
+                    style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
+                  >
                     <option value="">Select…</option>
                     {["1st","2nd","3rd","4th"].map(y=><option key={y} value={y}>{y}</option>)}
                   </select>
                 </div>
               </div>
-              <button onClick={handleRegister} style={{ marginTop:2, background:G, color:"#fff", border:"none", padding:13, borderRadius:8, cursor:"pointer", fontWeight:700, fontSize:14 }}>
-                ⊕ Register Student
-              </button>
+              <button onClick={handleRegister} className="btn btn-primary mt-1" style={{ background: G, padding: 13, fontSize: 14 }}>⊕ Register Student</button>
             </div>
           </div>
 
           {/* Recently Registered */}
-          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:26 }}>
-            <div style={{ fontWeight:700, color:T.white, fontSize:15, marginBottom:18 }}>
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>
               Recently Registered
-              <span style={{ marginLeft:8, background:T.accent+"20", color:T.accent, padding:"2px 9px", borderRadius:20, fontSize:11 }}>{registeredStudents.length}</span>
+              <span className="ml-2 px-2 py-1 rounded-full" style={{ background: `${theme.accent}20`, color: theme.accent, fontSize: 11 }}>{registeredStudents.length}</span>
             </div>
             {registeredStudents.length===0
-              ? <div style={{ textAlign:"center", color:T.muted, padding:"36px 0", fontSize:13 }}>No students yet</div>
+              ? <div className="text-center py-9" style={{ color: theme.muted, fontSize: 13 }}>No students yet</div>
               : (
-                <div style={{ display:"flex", flexDirection:"column", gap:9, maxHeight:400, overflowY:"auto" }}>
+                <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                   {[...registeredStudents].reverse().slice(0,10).map(s => (
-                    <div key={s.id} style={{ background:T.surface, borderRadius:9, padding:"10px 13px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div key={s.id} className="flex justify-between items-center p-3 rounded" style={{ background: theme.surface }}>
                       <div>
-                        <div style={{ fontWeight:600, color:T.text, fontSize:13 }}>{s.name}</div>
-                        <div style={{ color:T.muted, fontSize:11, marginTop:2 }}>{s.email}</div>
+                        <div className="font-semibold" style={{ color: theme.text, fontSize: 13 }}>{s.name}</div>
+                        <div style={{ color: theme.muted, fontSize: 11, marginTop: 2 }}>{s.email}</div>
                       </div>
-                      <div style={{ textAlign:"right" }}>
-                        <div style={{ fontFamily:"monospace", fontSize:11, color:T.accent, background:T.accent+"15", padding:"2px 7px", borderRadius:5, marginBottom:2 }}>{s.code}</div>
-                        <div style={{ fontSize:10, color:T.muted }}>{s.dept} · {s.year}</div>
+                      <div className="text-right">
+                        <div className="mono px-2 py-1 rounded mb-1" style={{ fontSize: 11, color: theme.accent, background: `${theme.accent}15` }}>{s.code}</div>
+                        <div style={{ fontSize: 10, color: theme.muted }}>{s.dept} · {s.year}</div>
                       </div>
                     </div>
                   ))}
@@ -144,41 +182,64 @@ export function AddStudentPage({ onBack, registeredStudents, setRegisteredStuden
 
       {/* TAB 2: ENROLL / REMOVE */}
       {tab==="enroll" && (
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
-          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:26 }}>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
             {/* Sub-tabs */}
-            <div style={{ display:"flex", gap:0, marginBottom:20, background:T.surface, borderRadius:8, border:`1px solid ${T.border}` }}>
+            <div className="flex gap-0 mb-5 rounded" style={{ background: theme.surface, border: `1px solid ${theme.border}` }}>
               {[["add","➕ Enroll"],["remove","🗑 Remove"]].map(([id,label]) => (
-                <button key={id} onClick={()=>{setETab(id);setEnrollMsg({type:"",text:""}); }}
-                  style={{ flex:1, padding:"8px 0", border:"none", borderRadius:7, cursor:"pointer", fontSize:13, fontWeight:600,
-                    background:eTab===id?(id==="remove"?T.red+"cc":G):"transparent", color:eTab===id?"#fff":T.muted, transition:"all 0.18s" }}>
+                <button
+                  key={id}
+                  onClick={()=>{setETab(id);setEnrollMsg({type:"",text:""}); }}
+                  className="btn flex-1 py-2 rounded"
+                  style={{
+                    background: eTab===id ? (id==="remove" ? `${theme.red}cc` : G) : "transparent",
+                    color: eTab===id ? "#fff" : theme.muted,
+                    fontSize: 13,
+                  }}
+                >
                   {label}
                 </button>
               ))}
             </div>
             <Msg m={enrollMsg} />
-            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            <div className="flex flex-col gap-3">
               <div>
-                <label style={lbl}>Student Code *</label>
-                <input placeholder="SC-2025-001" value={enrollForm.studentCode} onChange={e=>lookup(e.target.value)}
-                  style={{ ...inp, fontFamily:"monospace", fontSize:14, letterSpacing:1, borderColor:found?T.green:enrollForm.studentCode?T.red:T.border }} />
+                <label className="input-label" style={{ color: theme.muted }}>Student Code *</label>
+                <input
+                  placeholder="SC-2025-001"
+                  value={enrollForm.studentCode}
+                  onChange={e=>lookup(e.target.value)}
+                  className="input-field mono"
+                  style={{
+                    background: theme.surface,
+                    border: `1px solid ${found ? theme.green : enrollForm.studentCode ? theme.red : theme.border}`,
+                    color: theme.text,
+                    fontSize: 14,
+                    letterSpacing: 1
+                  }}
+                />
                 {enrollForm.studentCode && (
-                  <div style={{ marginTop:7, padding:"9px 13px", borderRadius:8, background:found?T.green+"12":T.red+"12", border:`1px solid ${found?T.green:T.red}28` }}>
+                  <div className="mt-2 p-3 rounded" style={{ background: found ? `${theme.green}12` : `${theme.red}12`, border: `1px solid ${found ? theme.green : theme.red}28` }}>
                     {found ? (
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ width:30, height:30, borderRadius:"50%", background:G, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, color:"#fff", fontSize:12, flexShrink:0 }}>{found.name[0]}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0" style={{ background: G }}>{found.name[0]}</div>
                         <div>
-                          <div style={{ fontWeight:600, color:T.green, fontSize:13 }}>{found.name}</div>
-                          <div style={{ color:T.muted, fontSize:11 }}>{found.dept} · {found.year}</div>
+                          <div className="font-semibold" style={{ color: theme.green, fontSize: 13 }}>{found.name}</div>
+                          <div style={{ color: theme.muted, fontSize: 11 }}>{found.dept} · {found.year}</div>
                         </div>
                       </div>
-                    ) : <div style={{ color:T.red, fontSize:12 }}>✗ Code not found in the system</div>}
+                    ) : <div style={{ color: theme.red, fontSize: 12 }}>✗ Code not found in the system</div>}
                   </div>
                 )}
               </div>
               <div>
-                <label style={lbl}>Course *</label>
-                <select value={enrollForm.courseId} onChange={e=>setEnrollForm(f=>({...f,courseId:e.target.value}))} style={inp}>
+                <label className="input-label" style={{ color: theme.muted }}>Course *</label>
+                <select
+                  value={enrollForm.courseId}
+                  onChange={e=>setEnrollForm(f=>({...f,courseId:e.target.value}))}
+                  className="input-field"
+                  style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
+                >
                   <option value="">Select course…</option>
                   {eTab==="remove"
                     ? studentEnrolls.map(e=>{const c=courses.find(c=>c.id===parseInt(e.courseId));return<option key={e.courseId} value={e.courseId}>{c?.name||e.courseName}</option>;})
@@ -190,35 +251,47 @@ export function AddStudentPage({ onBack, registeredStudents, setRegisteredStuden
                   }
                 </select>
               </div>
-              <button onClick={eTab==="add"?handleEnroll:handleRemove}
-                style={{ marginTop:2, background:eTab==="remove"?T.red:G, color:"#fff", border:"none", padding:13, borderRadius:8, cursor:"pointer", fontWeight:700, fontSize:14 }}>
-                {eTab==="add"?"▣ Enroll in Course":"🗑 Remove from Course"}
+              <button
+                onClick={eTab==="add"?handleEnroll:handleRemove}
+                className="btn mt-1"
+                style={{
+                  background: eTab==="remove" ? theme.red : G,
+                  color: "#fff",
+                  padding: 13,
+                  fontSize: 14,
+                  fontWeight: 700,
+                }}
+              >
+                {eTab==="add" ? "▣ Enroll in Course" : "🗑 Remove from Course"}
               </button>
             </div>
           </div>
 
           {/* Enrollment Log */}
-          <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:26 }}>
-            <div style={{ fontWeight:700, color:T.white, fontSize:15, marginBottom:18 }}>
-              {found?`${found.name}'s Courses`:"Enrollment Log"}
-              <span style={{ marginLeft:8, background:T.accent+"20", color:T.accent, padding:"2px 9px", borderRadius:20, fontSize:11 }}>
-                {found?studentEnrolls.length:enrollments.length}
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>
+              {found ? `${found.name}'s Courses` : "Enrollment Log"}
+              <span className="ml-2 px-2 py-1 rounded-full" style={{ background: `${theme.accent}20`, color: theme.accent, fontSize: 11 }}>
+                {found ? studentEnrolls.length : enrollments.length}
               </span>
             </div>
-            {(found?studentEnrolls:enrollments).length===0
-              ? <div style={{ textAlign:"center", color:T.muted, padding:"36px 0", fontSize:13 }}>{found?"No courses enrolled":"No enrollments yet"}</div>
+            {(found ? studentEnrolls : enrollments).length === 0
+              ? <div className="text-center py-9" style={{ color: theme.muted, fontSize: 13 }}>{found ? "No courses enrolled" : "No enrollments yet"}</div>
               : (
-                <div style={{ display:"flex", flexDirection:"column", gap:9, maxHeight:400, overflowY:"auto" }}>
-                  {[...(found?studentEnrolls:enrollments)].reverse().map(e => (
-                    <div key={e.id} style={{ background:T.surface, borderRadius:9, padding:"10px 13px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
+                  {[...(found ? studentEnrolls : enrollments)].reverse().map(e => (
+                    <div key={e.id} className="flex justify-between items-center p-3 rounded" style={{ background: theme.surface }}>
                       <div>
-                        {!found && <div style={{ fontWeight:600, color:T.text, fontSize:13 }}>{e.studentName}</div>}
-                        <div style={{ color:T.accent, fontSize:found?14:12, fontWeight:found?600:400, marginTop:found?0:2 }}>{e.courseName}</div>
+                        {!found && <div className="font-semibold" style={{ color: theme.text, fontSize: 13 }}>{e.studentName}</div>}
+                        <div style={{ color: theme.accent, fontSize: found ? 14 : 12, fontWeight: found ? 600 : 400, marginTop: found ? 0 : 2 }}>{e.courseName}</div>
                       </div>
-                      {!found && <div style={{ fontFamily:"monospace", fontSize:11, color:T.muted }}>{e.studentCode}</div>}
+                      {!found && <div className="mono" style={{ fontSize: 11, color: theme.muted }}>{e.studentCode}</div>}
                       {found && (
-                        <button onClick={()=>{setEnrollForm({studentCode:found.code,courseId:e.courseId});setETab("remove");}}
-                          style={{ background:T.red+"18", color:T.red, border:`1px solid ${T.red}30`, borderRadius:6, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600 }}>
+                        <button
+                          onClick={()=>{setEnrollForm({studentCode:found.code,courseId:e.courseId});setETab("remove");}}
+                          className="btn"
+                          style={{ background: `${theme.red}18`, color: theme.red, border: `1px solid ${theme.red}30`, borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}
+                        >
                           🗑 Remove
                         </button>
                       )}
