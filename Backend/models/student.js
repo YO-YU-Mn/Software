@@ -12,7 +12,7 @@ const studentSchema = new mongoose.Schema({
     university: { type: String, default: 'Our University' },
     email: { type: String, default: '' },
     phone: { type: String, default: '' }
-   
+
 });
 
 module.exports = mongoose.model('Student', studentSchema);

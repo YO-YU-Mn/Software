@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect("mongodb://localhost:27017/software_project")
+mongoose.connect("mongodb+srv://ym884565_db_user:ohih5TaDEp085ENz@cluster0.hfmk9we.mongodb.net/?appName=Cluster0")
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err));
 
@@ -42,7 +42,7 @@ app.post('/login', async (req, res) => {
         return res.json({ success: true, token, role: 'admin' });
     }
     
-    res.json({ success: false, message: 'Invalid Password!' });
+    res.json({ success: false, message: 'Invalid Password or Code!' });
 });
 
 app.post('/addstudent', async (req, res) => {
@@ -88,9 +88,6 @@ app.get('/student/profile', async (req, res) => {
     res.json(student);
 });
 
-
-
-
 app.post('/addadmin', async (req, res) => {
     const { code, password } = req.body;
     const existingAdmin = await Admin.findOne({ code });
@@ -102,12 +99,9 @@ app.post('/addadmin', async (req, res) => {
     res.json({ success: true, message: 'Admin added!' ,addedAdmim:newAdmin});
 });
 
-
 app.put('/updateadmin/:code', async (req, res) => {
     const { code } = req.params;
-    
-    const { password, email, name } = req.body; 
-    
+    const { password, email, name } = req.body;     
     const updatedAdmin = await Admin.findOneAndUpdate(
         { code },
         { password, name, email },
