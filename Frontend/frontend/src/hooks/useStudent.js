@@ -6,7 +6,7 @@ function useStudent() {
     useEffect(() => {
         async function getProfile() {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:9000/student/profile', {
+            const response = await fetch('http://localhost:9000/students/profile', {
                 headers: { authorization: token }
             });
             const data = await response.json();
@@ -14,7 +14,7 @@ function useStudent() {
         }
         getProfile();
     }, []);
-
+    
     return student;
 }
 

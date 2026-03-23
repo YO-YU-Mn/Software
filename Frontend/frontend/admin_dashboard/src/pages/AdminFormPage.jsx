@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 
-const ADMIN_PASSWORD = ""; // ضع كلمة المرور هنا
+const ADMIN_PASSWORD = ""; 
 
 export function AdminFormPage({ onBack }) {
+
   const { theme } = useTheme();
   const G = `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})`;
 
@@ -74,20 +75,20 @@ export function AdminFormPage({ onBack }) {
             </button>
           </div>
 
-          <button onClick={handleUnlock} className="btn btn-primary w-full py-3 text-base" style={{ background: G }}>🔓 Unlock</button>
+          <button onClick={handleUnlock} className="btn btn-primary w-full py-3 text-base" style={{ background: G }}> Unlock</button>
         </div>
       ) : (
         /* REGISTER FORM */
         <div className="max-w-md mx-auto card" style={{ background: theme.card, border: `1px solid ${theme.accent}30`, borderRadius: 16, padding: 34 }}>
           <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="text-lg">✅</span>
+            <span className="text-lg"></span>
             <h2 className="m-0 text-xl font-extrabold" style={{ color: theme.white }}>Register New Admin</h2>
           </div>
           <div className="h-1 w-12 mx-auto mb-6 rounded" style={{ background: G }} />
 
           {ok && (
             <div className="message message-success text-center mb-4" style={{ background: `${theme.green}18`, color: theme.green, borderColor: `${theme.green}35` }}>
-              ✅ Admin registered successfully!
+               Admin registered successfully!
             </div>
           )}
 
@@ -124,7 +125,7 @@ export function AdminFormPage({ onBack }) {
               className="btn"
               style={{ background: `${theme.red}15`, color: theme.red, border: `1px solid ${theme.red}28`, padding: 10, fontSize: 13, fontWeight: 600 }}
             >
-              🔒 Lock Page
+               Lock Page
             </button>
           </div>
         </div>
