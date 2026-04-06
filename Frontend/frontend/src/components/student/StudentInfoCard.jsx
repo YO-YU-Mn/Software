@@ -4,13 +4,13 @@ function StudentInfoCard({ student }) {
       <h2>البيانات الأكاديمية</h2>
 
       <div className="student-grid">
-        <p><strong>الاسم:</strong> {student.name}</p>
-        <p><strong>الكود الجامعي:</strong> {student.code}</p>
-        <p><strong>السنة الدراسية:</strong> {student.level}</p>
-        <p><strong>التخصص:</strong> {student.specialization}</p>
-        <p><strong>سنة التخرج:</strong> {student.gradute_year}</p>
+        <p><strong>Name:</strong> {student.name}</p>
+        <p><strong> code:</strong> {student.code}</p>
+        <p><strong> level:</strong> {student.level}</p>
+        <p><strong>Department:</strong> {student.specialization}</p>
+        <p><strong> graduation year:</strong> {student.gradute_year}</p>
         <p><strong>GPA:</strong> {student.GPA}</p>
-        <p><strong>الكلية:</strong> {student.university}</p>
+        <p><strong>uni:</strong> {student.university}</p>
         <p><strong>semester</strong>{student.semester}</p>
       </div>
     </div>

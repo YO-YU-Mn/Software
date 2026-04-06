@@ -1,67 +1,85 @@
-import { useState } from "react";
-import { T, STATUS_COLORS } from "../theme";
+import { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
 import { DetailPanel } from "../components/DetailPanel";
+import axios from "axios";
+import toast from 'react-hot-toast';
 
-export function Reports({ students, setPage }) {
+export function Reports({ setPage }) {
+  const { theme } = useTheme();
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [panel, setPanel] = useState(null);
 
-  const numGpa   = students.filter(s => typeof s.gpa === "number");
-  const avgGpa   = numGpa.length ? (numGpa.reduce((a,s) => a+s.gpa, 0) / numGpa.length).toFixed(2) : "—";
-  const top      = [...students].sort((a,b) => b.gpa-a.gpa).slice(0,3);
-  const statuses = students.reduce((acc,s) => { acc[s.status]=(acc[s.status]||0)+1; return acc; }, {});
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:9000/students/all', {
+          headers: { Authorization: token }
+        });
+        setStudents(res.data);
+      } catch (err) {
+        toast.error('فشل تحميل الطلاب');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, []);
+
+  if (loading) return <p style={{ color: theme.muted }}>جاري التحميل...</p>;
+
+  const totalStudents = students.length;
+  const studentsWithGPA = students.filter(s => typeof s.GPA === 'number');
+  const avgGPA = studentsWithGPA.length ? (studentsWithGPA.reduce((a, s) => a + s.GPA, 0) / studentsWithGPA.length).toFixed(2) : '—';
+  const topStudents = [...students].sort((a, b) => b.GPA - a.GPA).slice(0, 3);
+  const statusCounts = {
+    'Honor Roll': students.filter(s => s.GPA >= 3.7).length,
+    'Good Standing': students.filter(s => s.GPA >= 3.0 && s.GPA < 3.7).length,
+    'At Risk': students.filter(s => s.GPA < 3.0).length
+  };
 
   return (
-    <div style={{ padding:28, flex:1, overflowY:"auto" }}>
-      <button onClick={()=>setPage("dashboard")} style={{ background:"#0b1528", color:"#4d6b8a", border:"1px solid #112240", padding:"7px 14px", borderRadius:7, cursor:"pointer", fontSize:12, marginBottom:22 }}>← Back</button>
-      <h1 style={{ margin:"0 0 22px", fontSize:22, fontWeight:800, color:"#ffffff" }}>Academic Reports</h1>
+    <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
+      <button onClick={() => setPage("dashboard")} className="btn-back" style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}>← Back</button>
+      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>Academic Reports</h1>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18 }}>
+      <div className="grid grid-cols-2 gap-4">
         {/* Status Distribution */}
-        <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:22 }}>
-          <div style={{ fontWeight:700, color:T.white, marginBottom:18, fontSize:15 }}>Status Distribution</div>
-          {Object.entries(statuses).map(([st,n]) => (
-            <div key={st} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom:`1px solid ${T.border}20` }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                <div style={{ width:8, height:8, borderRadius:"50%", background:STATUS_COLORS[st]||T.muted }} />
-                <span style={{ color:T.text, fontSize:13 }}>{st}</span>
-              </div>
-              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                <div style={{ height:4, width:80, background:T.border, borderRadius:3 }}>
-                  <div style={{ width:`${(n/students.length)*100}%`, height:"100%", background:STATUS_COLORS[st]||T.muted, borderRadius:3 }} />
-                </div>
-                <span style={{ color:STATUS_COLORS[st]||T.muted, fontWeight:700, fontSize:13, minWidth:20 }}>{n}</span>
-              </div>
+        <div className="card" style={{ background: theme.card, borderColor: theme.border, padding: 22 }}>
+          <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Status Distribution</div>
+          {Object.entries(statusCounts).map(([status, count]) => (
+            <div key={status} className="flex items-center justify-between py-2" style={{ borderBottom: `1px solid ${theme.border}20` }}>
+              <span className="text-sm" style={{ color: theme.text }}>{status}</span>
+              <span className="text-sm font-bold" style={{ color: theme.accent }}>{count}</span>
             </div>
           ))}
         </div>
 
         {/* Avg GPA */}
-        <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:22, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
-          <div style={{ fontWeight:700, color:T.white, marginBottom:14, fontSize:15 }}>Faculty Average GPA</div>
-          <div style={{ fontSize:72, fontWeight:800, color:T.purple, lineHeight:1 }}>{avgGpa}</div>
-          <div style={{ color:T.muted, fontSize:13, marginTop:8 }}>out of 4.0</div>
+        <div className="card flex flex-col items-center justify-center" style={{ background: theme.card, borderColor: theme.border, padding: 22 }}>
+          <div className="font-bold mb-3" style={{ color: theme.white, fontSize: 15 }}>Faculty Average GPA</div>
+          <div className="text-7xl font-extrabold" style={{ color: theme.purple, lineHeight: 1 }}>{avgGPA}</div>
+          <div className="text-sm mt-2" style={{ color: theme.muted }}>out of 4.0</div>
         </div>
 
         {/* Top Students */}
-        <div style={{ background:T.card, border:`1px solid ${T.border}`, borderRadius:14, padding:22, gridColumn:"span 2" }}>
-          <div style={{ fontWeight:700, color:T.white, marginBottom:16, fontSize:15 }}>Top Performing Students — click for profile</div>
-          <div style={{ display:"flex", gap:14 }}>
-            {top.map((s,i) => (
-              <div key={s.id} onClick={()=>setPanel(s)}
-                style={{ flex:1, background:T.surface, borderRadius:12, padding:18, borderTop:`3px solid ${[T.yellow,T.muted,"#cd7f32"][i]}`, cursor:"pointer", transition:"all 0.2s" }}
-                onMouseEnter={e=>e.currentTarget.style.transform="translateY(-4px)"}
-                onMouseLeave={e=>e.currentTarget.style.transform="none"}>
-                <div style={{ fontSize:22, marginBottom:10 }}>{["🥇","🥈","🥉"][i]}</div>
-                <div style={{ fontWeight:700, color:T.white, marginBottom:3, fontSize:14 }}>{s.name}</div>
-                <div style={{ fontSize:11, color:T.muted, marginBottom:12 }}>{s.course}</div>
-                <div style={{ fontSize:28, fontWeight:800, color:T.green }}>{s.gpa}</div>
+        <div className="card col-span-2" style={{ background: theme.card, borderColor: theme.border, padding: 22 }}>
+          <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Top Performing Students</div>
+          <div className="flex gap-3">
+            {topStudents.map((s, i) => (
+              <div key={s.code} className="flex-1 p-4 rounded-lg cursor-pointer hover:-translate-y-1" style={{ background: theme.surface, borderTop: `3px solid ${[theme.yellow, theme.muted, '#cd7f32'][i]}` }} onClick={() => setPanel(s)}>
+                <div className="text-2xl mb-2">{['🥇','🥈','🥉'][i]}</div>
+                <div className="font-bold mb-1" style={{ color: theme.white }}>{s.name}</div>
+                <div className="text-xs mb-3" style={{ color: theme.muted }}>{s.specialization}</div>
+                <div className="text-2xl font-extrabold" style={{ color: theme.green }}>{s.GPA}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <DetailPanel item={panel} type="student" onClose={()=>setPanel(null)} />
+      <DetailPanel item={panel} type="student" onClose={() => setPanel(null)} />
     </div>
   );
 }

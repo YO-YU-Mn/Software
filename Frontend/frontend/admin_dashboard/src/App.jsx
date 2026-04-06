@@ -1,43 +1,60 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import { useState } from "react";
-import { INIT_COURSES, INIT_STUDENTS } from "./data/initialData";
-import { Dashboard }       from "./pages/Dashboard";
-import { StudentsList }    from "./pages/StudentsList";
-import { CoursesList }     from "./pages/CoursesList";
-import { Reports }         from "./pages/Reports";
-import { AddStudentPage }  from "./pages/AddStudentPage";
-import { AdminFormPage }   from "./pages/AdminFormPage";
+import { ThemeProvider } from "./context/ThemeContext";
+import { Dashboard } from "./pages/Dashboard";
+import { StudentsList } from "./pages/StudentsList";
+import { CoursesList } from "./pages/CoursesList";
+import { Reports } from "./pages/Reports";
+import { AddStudentPage } from "./pages/AddStudentPage";
+import { AdminFormPage } from "./pages/AdminFormPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { NewsPage } from "./pages/NewsPage";
+import "./style.css";
 
 export default function App() {
-  const [page, setPage]           = useState("dashboard");
-  const [courses, setCourses]     = useState(INIT_COURSES.map(c => ({...c})));
-  const [students, setStudents]   = useState(INIT_STUDENTS.map(s => ({...s, code:"SC-2024-"+s.id})));
-  const [enrollments, setEnrollments] = useState(
-    INIT_STUDENTS.map(s => ({
-      studentCode: "SC-2024-"+s.id,
-      courseId:    String(INIT_COURSES.find(c => c.name===s.course)?.id || 1),
-      studentName: s.name,
-      courseName:  s.course,
-      id:          s.id,
-    }))
-  );
+  const [page, setPage] = useState("dashboard");
 
   return (
-    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"#050914", fontFamily:"'IBM Plex Mono','Courier New',monospace", color:"#e2eaf6" }}>
-      <style>{`
-        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #112240 #080f1e; }
-        *::-webkit-scrollbar { width: 5px; height: 5px; }
-        *::-webkit-scrollbar-track { background: #080f1e; }
-        *::-webkit-scrollbar-thumb { background: #112240; border-radius: 10px; }
-        *::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-        select option { background: #0b1528; }
-      `}</style>
-
-      {page==="dashboard"  && <Dashboard     students={students} courses={courses} enrollments={enrollments} setPage={setPage} />}
-      {page==="students"   && <StudentsList  students={students} setPage={setPage} />}
-      {page==="courses"    && <CoursesList   courses={courses} setCourses={setCourses} enrollments={enrollments} setPage={setPage} />}
-      {page==="reports"    && <Reports       students={students} setPage={setPage} />}
-      {page==="addStudent" && <AddStudentPage onBack={()=>setPage("dashboard")} registeredStudents={students} setRegisteredStudents={setStudents} enrollments={enrollments} setEnrollments={setEnrollments} courses={courses} />}
-      {page==="addAdmin"   && <AdminFormPage  onBack={()=>setPage("dashboard")} />}
-    </div>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1e1e2f',
+              color: '#fff',
+              borderRadius: '16px',
+              padding: '16px 24px',
+              fontSize: '16px',
+              fontWeight: '500',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+              direction: 'rtl',
+            },
+            success: {
+              icon: '',
+              style: { background: '#22c55e' },
+            },
+            error: {
+              icon: '',
+              style: { background: '#ef4444' },
+            },
+          }}
+        />
+        <div className="app-container">
+          {page === "dashboard" && <Dashboard setPage={setPage} />}
+          {page === "students" && <StudentsList setPage={setPage} />}
+          {page === "courses" && <CoursesList setPage={setPage} />}
+          {page === "reports" && <Reports setPage={setPage} />}
+          {page === "addStudent" && <AddStudentPage onBack={()=>setPage("dashboard")} />}
+          {page === "addAdmin" && <AdminFormPage onBack={()=>setPage("dashboard")} />}
+          {page === "notifications" && <NotificationsPage onBack={()=>setPage("dashboard")} />}
+          {page === "settings" && <SettingsPage onBack={()=>setPage("dashboard")} />}
+          {page === "news" && <NewsPage onBack={()=>setPage("dashboard")} />}
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

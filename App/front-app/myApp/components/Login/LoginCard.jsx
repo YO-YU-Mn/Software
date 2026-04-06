@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {API_BASE_URL} from '../../config';
 
 function LoginCard() {
     // 1. تعريف الـ States لتخزين ما يكتبه المستخدم
@@ -33,7 +33,7 @@ function LoginCard() {
             console.log("Attempting login with:", code);
              console.log("iam herr1 ");
             // ملاحظة: استبدل localhost بـ 10.0.2.2 إذا كنت تستخدم محاكي أندرويد
-            const response = await fetch('http://192.168.1.37:9000/login', {
+            const response = await fetch(`${API_BASE_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: code, password: password })
@@ -49,10 +49,13 @@ function LoginCard() {
 
                 if (data.role === 'admin') {
                     // فتح رابط خارجي للأدمن
+                    console.log("Admin login successful, opening admin panel...");
                     Linking.openURL('http://localhost:5174');
+                    router.push('/RegistrationPage');
                 } else {
                     // الانتقال لصفحة الطالب داخل التطبيق
-                    console.log("iam ready ! ");
+                    console.log("Student login successful, navigating to dashboard...");
+                    console.log("student ready ! ");
                    router.push('/StudentDashboard');
                 }
             } else {

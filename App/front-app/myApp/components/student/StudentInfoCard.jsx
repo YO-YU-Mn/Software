@@ -1,14 +1,15 @@
+// StudentInfoCard.jsx — React Native
 import { View, Text, StyleSheet } from "react-native";
 
 const FIELDS = [
-  { label: "الاسم",          key: "fullName" },
-  { label: "الكود الجامعي",  key: "id" },
-  { label: "السنة الدراسية", key: "year" },
-  { label: "التخصص",        key: "major" },
-  { label: "الفرقة",         key: "level" },
-  { label: "سنة التخرج",    key: "graduationYear" },
-  { label: "GPA",            key: "gpa" },
-  { label: "الكلية",         key: "faculty" },
+  { label: "الاسم",           key: "name" },
+  { label: "الكود الجامعي",   key: "code" },
+  { label: "المستوى",         key: "level" },
+  { label: "التخصص",         key: "specialization" },
+  { label: "سنة التخرج",     key: "gradute_year" },
+  { label: "GPA",             key: "GPA" },
+  { label: "الجامعة",         key: "university" },
+  { label: "الفصل الدراسي",   key: "semester" },
 ];
 
 function StudentInfoCard({ student }) {

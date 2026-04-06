@@ -7,5 +7,4 @@ function NewsCard({ title, date, description }) {
     </div>
   );
 }
-
 export default NewsCard;

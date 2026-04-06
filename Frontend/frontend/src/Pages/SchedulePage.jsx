@@ -1,21 +1,115 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
+import toast from 'react-hot-toast';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 function SchedulePage() {
   const navigate = useNavigate();
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
 
-  const savedData = localStorage.getItem("studentSchedule");
-  const saved = savedData ? JSON.parse(savedData) : null;
   
-  const coursesList = saved && Array.isArray(saved) ? saved : [];
+  useEffect(() => {
+    const fetchRegStatus = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:9000/settings/status', {
+          headers: { Authorization: token }
+        });
+        setRegistrationOpen(res.data.registrationOpen);
+      } catch (err) {
+        console.error("Failed to fetch registration status", err);
+      }
+    };
+    fetchRegStatus();
+  }, []);
 
-  function handleReset() {
-    localStorage.removeItem("studentSchedule");
-    navigate("/home_page/registration");
-  }
 
-  if (coursesList.length === 0) {
-    return (
+  const fetchSchedule = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:9000/courses/current', {
+        headers: { Authorization: token }
+      });
+      setCourses(res.data);
+    } catch (err) {
+      console.error(err);
+      toast.error("فشل تحميل الجدول");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchedule();
+  }, []);
+
+  
+  const handleDrop = (courseId) => {
+    confirmAlert({
+      title: 'تأكيد الحذف',
+      message: 'هل أنت متأكد من حذف هذه المادة؟',
+      buttons: [
+        {
+          label: 'yes',
+          onClick: async () => {
+            try {
+              const token = localStorage.getItem('token');
+              await axios.delete('http://localhost:9000/courses/drop', {
+                headers: { Authorization: token },
+                data: { course_id: courseId }
+              });
+              toast.success('تم حذف المادة بنجاح');
+              setCourses(prev => prev.filter(c => c.course_id !== courseId));
+            } catch (err) {
+              toast.error('حدث خطأ أثناء الحذف');
+            }
+          }
+        },
+        {
+          label: 'no',
+          onClick: () => {}
+        }
+      ]
+    });
+  };
+
+
+  const handleReset = () => {
+    confirmAlert({
+      title: 'تأكيد إعادة التسجيل',
+      message: 'هل أنت متأكد من إعادة تسجيل المواد؟ سيتم حذف جميع المواد المسجلة حالياً.',
+      buttons: [
+        {
+          label: 'yes',
+          onClick: async () => {
+            try {
+              const token = localStorage.getItem('token');
+              await axios.delete('http://localhost:9000/courses/drop-all', {
+                headers: { Authorization: token }
+              });
+              toast.success('تم حذف جميع المواد، يمكنك التسجيل من جديد');
+              navigate("/home_page/registration");
+            } catch (err) {
+              toast.error('حدث خطأ أثناء حذف المواد');
+            }
+          }
+        },
+        {
+          label: 'no',
+          onClick: () => {}
+        }
+      ]
+    });
+  };
+
+  if (loading) return <p> Loading...</p>;
+
+  if (courses.length === 0) {
+     return (
       <div className="schedule-page">
         <div className="no-data">
           <div className="no-data-icon">📅</div>
@@ -23,17 +117,23 @@ function SchedulePage() {
           <p>لم تقم بتسجيل أي مواد بعد</p>
           <button 
             className="btn-register"
-            onClick={() => navigate("/home_page/registration")}
+            onClick={() => {
+              if (!registrationOpen) {
+                toast.error("تسجيل المواد مغلق حالياً");
+                return;
+              }
+              navigate("/home_page/registration");
+            }}
+            disabled={!registrationOpen}
           >
-            <span>➕</span> تسجيل مواد الآن
+            <span></span> تسجيل مواد الآن
           </button>
         </div>
       </div>
     );
   }
 
-  
-  const totalHours = coursesList.reduce((sum, c) => sum + (c?.hours || 0), 0);
+  const totalHours = courses.reduce((sum, c) => sum + (c.credits || 0), 0);
 
   return (
     <div className="schedule-page">
@@ -41,10 +141,10 @@ function SchedulePage() {
         <h2>الجدول الدراسي</h2>
         <div className="schedule-actions">
           <button className="btn-print" onClick={() => window.print()}>
-            <span>🖨️</span> طباعة
+            <span></span> Print
           </button>
           <button className="btn-reset" onClick={handleReset}>
-            <span>🔄</span> إعادة تسجيل
+            <span></span>  Reset
           </button>
         </div>
       </div>
@@ -53,50 +153,49 @@ function SchedulePage() {
         <div className="summary-item">
           <div className="summary-icon">📚</div>
           <div className="summary-info">
-            <h4>إجمالي المواد</h4>
-            <p>{coursesList.length}</p>
+            <h4> Subjects</h4>
+            <p>{courses.length}</p>
           </div>
         </div>
         <div className="summary-item">
           <div className="summary-icon">⏱️</div>
           <div className="summary-info">
-            <h4>إجمالي الساعات</h4>
-            <p>{totalHours}</p>
+            <h4> Total Hours</h4>
+            <p>{totalHours} /18</p>
           </div>
         </div>
         <div className="summary-item">
           <div className="summary-icon">📅</div>
           <div className="summary-info">
-            <h4>أيام الدراسة</h4>
-            <p>{new Set(coursesList.flatMap(c => c?.schedule?.map(s => s?.day) || []).filter(Boolean)).size}</p>
+            <h4>Days </h4>
+            <p>{new Set(courses.flatMap(c => c?.schedule?.map(s => s?.day) || []).filter(Boolean)).size}</p>
           </div>
         </div>
       </div>
 
       <div className="schedule-cards">
-        {coursesList.map(course => (
-          <div key={course?.id || Math.random()} className="schedule-card">
+        {courses.map(course => (
+          <div key={course.course_id} className="schedule-card">
             <div className="card-header">
-              <h3 className="course-name">{course?.name || 'بدون عنوان'}</h3>
+              <h3 className="course-name">{course.title || 'بدون عنوان'}</h3>
               <span className="course-badge">
-                <span>⏱️</span> {course?.hours || 0} ساعات
+                <span></span> {course.credits || 0} Hours
               </span>
             </div>
 
             <div className="course-details">
               <span className="detail-item">
-                <span>👨‍🏫</span> {course?.instructor || 'د. أحمد محمد'}
+                <span></span> {course.instructor || 'د. أحمد محمد'}
               </span>
               <span className="detail-item">
-                <span>🏛️</span> {course?.department || 'علوم حاسب'}
+                <span>🏛️</span> {course.department || 'علوم حاسب'}
               </span>
             </div>
 
-            {/* ✅ تأكد من وجود schedule قبل عرضه */}
             {course?.schedule && Array.isArray(course.schedule) && course.schedule.length > 0 && (
               <div className="schedule-timetable">
                 <div className="timetable-title">
-                  <span>📅</span> مواعيد المحاضرات
+                  <span></span> مواعيد المحاضرات
                 </div>
                 <div className="timetable-grid">
                   {course.schedule.map((s, index) => (
@@ -104,7 +203,7 @@ function SchedulePage() {
                       <span className="timetable-day">{s?.day || 'غير محدد'}</span>
                       <span className="timetable-time">{s?.time || 'غير محدد'}</span>
                       <span className="timetable-location">
-                        <span>📍</span> {s?.location || 'قاعة 101'}
+                        <span></span> {s?.location || 'قاعة 101'}
                       </span>
                     </div>
                   ))}
@@ -114,21 +213,26 @@ function SchedulePage() {
 
             <div className="course-info">
               <span className="info-item">
-                <span>📝</span> رمز المادة: {course?.code || 'CS101'}
+                <span></span>  Subject Code: {course.course_id}
               </span>
               <span className="info-item">
-                <span>⭐</span> {course?.hours || 0} ساعات معتمدة
+                <span></span> {course.credits || 0}  Hours
               </span>
             </div>
+
+            <button 
+              className="btn-drop"
+              onClick={() => handleDrop(course.course_id)}
+            >
+              <span></span>  Delete
+            </button>
           </div>
         ))}
       </div>
 
-      {/* عرض أسبوعي إضافي */}
+      {/* العرض الأسبوعي */}
       <div className="weekly-view">
-        <h3>
-          <span>📊</span> عرض أسبوعي
-        </h3>
+        <h3><span></span> عرض أسبوعي</h3>
         <div className="weekly-grid">
           {['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
             <div key={day} className="week-day">
@@ -136,11 +240,11 @@ function SchedulePage() {
                 <span className="day-name">{day}</span>
                 <span className="day-date">2026/03/01</span>
               </div>
-              {coursesList
+              {courses
                 .filter(course => course?.schedule?.some?.(s => s?.day === day))
                 .map(course => (
-                  <div key={course?.id} className="week-course">
-                    <strong>{course?.name}</strong>
+                  <div key={course.course_id} className="week-course">
+                    <strong>{course.title}</strong>
                     <div>{course?.schedule?.find?.(s => s?.day === day)?.time}</div>
                     <div>{course?.schedule?.find?.(s => s?.day === day)?.location || 'قاعة 101'}</div>
                   </div>
