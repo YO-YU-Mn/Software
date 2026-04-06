@@ -10,6 +10,9 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
 
+// قائمة التخصصات الثابتة (بدلاً من جلبها من API)
+  const dep = ["CS", "Physics", "Chem", "Math", "Bio"];
+
   // جلب التخصصات المتاحة
   useEffect(() => {
     const fetchSpecializations = async () => {
@@ -146,7 +149,7 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
     : [
         { label: 'Course ID', key: 'course_id', type: 'text', readonly: true },
         { label: 'Title', key: 'title', type: 'text' },
-        { label: 'Department', key: 'department', type: 'text' },
+        { label: 'Department', key: 'specialization', type: 'select', options: dep },
         { label: 'Level', key: 'level', type: 'number' },
         { label: 'Semester', key: 'semester', type: 'number' },
         { label: 'Credits', key: 'credits', type: 'number' },

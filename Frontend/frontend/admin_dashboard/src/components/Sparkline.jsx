@@ -1,6 +1,6 @@
 export function Sparkline({ data, color, width = 80, height = 28 }) {
-  if (!data || data.length < 2) return null;
 
+  if (!data || data.length < 2) return null;
   const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
   const pts = data.map((v, i) => {
     const x = (i / (data.length - 1)) * width;

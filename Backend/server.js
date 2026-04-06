@@ -21,7 +21,7 @@ const settingsRoutes = require("./routes/settingsRoutes");
 const statsRoutes = require('./routes/statsRoutes');
 
 
-const app = express(); //server instance
+const app = express(); 
 const port = 9000;
 
 // Middleware
@@ -42,6 +42,7 @@ app.use('/stats', statsRoutes);
 //login Authontication
 app.post('/login', async (req, res) => {
     const { code, password } = req.body;
+    
     const student = await Student.findOne({ code, password: Number(password) });
     if(student) {
         const token = jwt.sign({ code, role: 'student' }, SECRET);
@@ -56,8 +57,9 @@ app.post('/login', async (req, res) => {
 });
 
 
+//mongodb://localhost:27017//university => local 
 // MongoDB Connection
-mongoose.connect("mongodb://ym884565_db_user:ohih5TaDEp085ENz@ac-udjvz02-shard-00-00.hfmk9we.mongodb.net:27017,ac-udjvz02-shard-00-01.hfmk9we.mongodb.net:27017,ac-udjvz02-shard-00-02.hfmk9we.mongodb.net:27017/?ssl=true&replicaSet=atlas-h0pkj2-shard-0&authSource=admin&appName=Cluster0")
+mongoose.connect("mongodb+srv://MostafaMR7_db_user:PZm0rvQ0A0HVkV7u@clusterbymr7.ptds641.mongodb.net/?appName=ClusterByMR7") // temp
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err)); 
 

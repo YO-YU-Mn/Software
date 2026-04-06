@@ -22,7 +22,6 @@ function LoginCard() {
             localStorage.setItem('token', data.token);
             localStorage.setItem('name', data.name);
             
-            
             if(data.role === 'admin') {
                 window.location.href = 'http://localhost:5174';
             } else {

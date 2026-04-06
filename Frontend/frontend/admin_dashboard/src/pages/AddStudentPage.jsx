@@ -16,31 +16,8 @@ export function AddStudentPage({ onBack }) {
   const [recentStudents, setRecentStudents] = useState([]);
   const [loading, setLoading] = useState(false);
 
-
-
-const [specializations, setSpecializations] = useState([]);
-
-// جلب التخصصات الفريدة من الطلاب
-useEffect(() => {
-  const fetchSpecializations = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/students/all', {
-        headers: { Authorization: token }
-      });
-      // استخراج التخصصات الفريدة (مع تجاهل القيم الفارغة)
-      const uniqueSpecs = [...new Set(res.data.map(s => s.specialization).filter(Boolean))];
-      setSpecializations(uniqueSpecs);
-    } catch (err) {
-      console.error('Failed to fetch specializations', err);
-      // إذا فشل، نستخدم قائمة افتراضية (اختياري)
-      setSpecializations(['CS', 'IT', 'IS', 'DS']);
-    }
-  };
-  fetchSpecializations();
-}, []);
-
-
+  // قائمة التخصصات الثابتة (بدلاً من جلبها من API)
+  const specializations = ["CS", "Physics", "Chem", "Math", "Bio"];
 
   // جلب جميع الكورسات (للتسجيل)
   useEffect(() => {
@@ -65,7 +42,6 @@ useEffect(() => {
       const res = await axios.get('http://localhost:9000/students/all', {
         headers: { Authorization: token }
       });
-      // نأخذ آخر 10 طلاب بناءً على تاريخ الإنشاء
       const sorted = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
       setRecentStudents(sorted);
     } catch (err) {
@@ -95,7 +71,6 @@ useEffect(() => {
         toast.error('الطالب غير موجود');
       } else {
         setFoundStudent(res.data);
-        // جلب تفاصيل المواد المسجلة للطالب
         const enrolledDetails = courses.filter(c => res.data.currentCourses?.includes(c.course_id));
         setStudentCourses(enrolledDetails);
       }
@@ -116,7 +91,7 @@ useEffect(() => {
         ...regForm,
         level: Number(regForm.level),
         semester: Number(regForm.semester),
-        password: Number(regForm.password) // الباك إند يتوقع رقم
+        password: Number(regForm.password)
       };
       const res = await axios.post('http://localhost:9000/students/addstudent', payload, {
         headers: { Authorization: token }
@@ -124,7 +99,6 @@ useEffect(() => {
       if (res.data.success) {
         toast.success('تم إضافة الطالب بنجاح');
         setRegForm({ code: "", password: "", name: "", email: "", specialization: "", level: "", semester: "", phone: "" });
-        // تحديث قائمة الطلاب بعد الإضافة
         fetchRecentStudents();
       } else {
         toast.error(res.data.message || 'فشل الإضافة');
@@ -137,35 +111,32 @@ useEffect(() => {
   };
 
   const handleEnroll = async () => {
-  if (!enrollForm.studentCode || !enrollForm.courseId) {
-    toast.error('اختر الطالب والمادة');
-    return;
-  }
-  setLoading(true);
-  try {
-    const token = localStorage.getItem('token');
-    await axios.post(`http://localhost:9000/courses/admin/register/${enrollForm.studentCode}`, {
-      course_id: enrollForm.courseId
-    }, {
-      headers: { Authorization: token }
-    });
-    toast.success('تم تسجيل الطالب في المادة');
+    if (!enrollForm.studentCode || !enrollForm.courseId) {
+      toast.error('اختر الطالب والمادة');
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:9000/courses/admin/register/${enrollForm.studentCode}`, {
+        course_id: enrollForm.courseId
+      }, {
+        headers: { Authorization: token }
+      });
+      toast.success('تم تسجيل الطالب في المادة');
 
-    // تحديث معلومات الطالب والمواد المسجلة
-    const res = await axios.get(`http://localhost:9000/students/student/${enrollForm.studentCode}`, {
-      headers: { Authorization: token }
-    });
-    setFoundStudent(res.data);
-    const enrolledDetails = courses.filter(c => res.data.currentCourses?.includes(c.course_id));
-    setStudentCourses(enrolledDetails);
-  } catch (err) {
-    toast.error(err.response?.data?.error || 'حدث خطأ');
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+      const res = await axios.get(`http://localhost:9000/students/student/${enrollForm.studentCode}`, {
+        headers: { Authorization: token }
+      });
+      setFoundStudent(res.data);
+      const enrolledDetails = courses.filter(c => res.data.currentCourses?.includes(c.course_id));
+      setStudentCourses(enrolledDetails);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'حدث خطأ');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
@@ -180,7 +151,6 @@ useEffect(() => {
 
       {tab === "register" && (
         <div className="grid grid-cols-2 gap-6">
-          {/* نموذج الإضافة */}
           <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
             <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Student Information</div>
             <div className="flex flex-col gap-3">
@@ -191,9 +161,9 @@ useEffect(() => {
               <input placeholder="Phone" value={regForm.phone} onChange={e => setRegForm({...regForm, phone: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }} />
               <div className="grid grid-cols-2 gap-2">
                 <select value={regForm.specialization} onChange={e => setRegForm({...regForm, specialization: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}>
-  <option value="">Specialization *</option>
-  {specializations.map(spec => <option key={spec} value={spec}>{spec}</option>)}
-</select>
+                  <option value="">Specialization *</option>
+                  {specializations.map(spec => <option key={spec} value={spec}>{spec}</option>)}
+                </select>
                 <input type="number" placeholder="Level *" value={regForm.level} onChange={e => setRegForm({...regForm, level: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }} />
               </div>
               <input type="number" placeholder="Semester *" value={regForm.semester} onChange={e => setRegForm({...regForm, semester: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }} />
@@ -201,7 +171,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* قائمة آخر الطلاب المضافين */}
           <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
             <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Recently Registered</div>
             {recentStudents.length === 0 ? (

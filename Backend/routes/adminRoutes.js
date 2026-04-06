@@ -35,6 +35,4 @@ router.delete('/delAdmin/:code', async (req, res) => {
     res.json({ success: true, message: 'Admin deleted!', admin: deleted });
 });
 
-
-
 module.exports = router;

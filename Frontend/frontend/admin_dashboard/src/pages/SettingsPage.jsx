@@ -56,7 +56,7 @@ export function SettingsPage({ onBack }) {
         ← Back
       </button>
 
-      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>إعدادات النظام</h1>
+      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}> Settings</h1>
 
       <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}`, padding: 30, maxWidth: 600 }}>
         <div className="flex flex-col gap-6">
@@ -105,7 +105,7 @@ export function SettingsPage({ onBack }) {
             </select>
           </div>
 
-          {/* الحد الأقصى للساعات */}
+          {/* الحد الأقصى للساعات 
           <div>
             <label className="input-label" style={{ color: theme.muted }}>الحد الأقصى للساعات المسجلة</label>
             <input
@@ -116,7 +116,7 @@ export function SettingsPage({ onBack }) {
               style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text, marginTop: 4 }}
             />
           </div>
-
+              */}
           <button onClick={handleSave} disabled={saving} className="btn btn-primary py-3" style={{ background: G, opacity: saving ? 0.6 : 1 }}>
             {saving ? 'Saving ...' : 'Save Settings '}
           </button>

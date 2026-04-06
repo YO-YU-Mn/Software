@@ -234,7 +234,7 @@ function SchedulePage() {
       <div className="weekly-view">
         <h3><span></span> عرض أسبوعي</h3>
         <div className="weekly-grid">
-          {['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
+          {['Sunday', 'Monday', 'Teusday', 'Wendsday', 'Thursday', 'Friday','Saturday'].map(day => (
             <div key={day} className="week-day">
               <div className="day-header">
                 <span className="day-name">{day}</span>

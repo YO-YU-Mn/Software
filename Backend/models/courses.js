@@ -19,7 +19,6 @@ const coursesSchema = new mongoose.Schema({
         location: { type: String }
         }
     ]
-
 });
 
 module.exports = mongoose.model("course", coursesSchema);
