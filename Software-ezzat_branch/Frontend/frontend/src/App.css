@@ -1,0 +1,18 @@
+
+#root {
+  max-width: 100% !important; 
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important; 
+}
+
+.logo, .card, .read-the-docs {
+ 
+  all: unset;
+}
+
+
+.logo, .logo:hover, .logo.react, .logo.react:hover {
+  animation: none !important;
+  filter: none !important;
+}
