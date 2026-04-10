@@ -97,6 +97,7 @@ function LoginCard() {
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
+            
 
             <Text style={styles.supportText}>
                 For account issues, contact IT Support
