@@ -1,7 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+require('dotenv').config(); 
+// يجب أن يكون هذا السطر قبل استيراد أي ملفات أخرى تستخدم الـ API Key
 //schemas
 const Student = require("./models/student");
 const Admin = require('./models/admin');
@@ -19,6 +20,10 @@ const newsRoutes = require("./routes/newsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const statsRoutes = require('./routes/statsRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
+
+
+
 
 
 const app = express(); //server instance
@@ -33,10 +38,14 @@ app.use("/admins", adminRoutes);
 app.use("/news", newsRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/settings", settingsRoutes);
+
+app.use("/chatbot", chatbotRoutes);
+
 app.use('/notifications', notificationRoutes);
 app.use('/news', newsRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/stats', statsRoutes);
+// app.use('/chatbot', chatbotRoutes);
 
 
 //login Authontication
