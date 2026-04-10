@@ -21,6 +21,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const statsRoutes = require('./routes/statsRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
+const advisorRoutes = require('./routes/advisorRoutes');
 
 
 
@@ -40,6 +41,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/settings", settingsRoutes);
 
 app.use("/chatbot", chatbotRoutes);
+app.use('/advisor', advisorRoutes);
 
 app.use('/notifications', notificationRoutes);
 app.use('/news', newsRoutes);

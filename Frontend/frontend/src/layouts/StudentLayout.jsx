@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Header from "../components/student/layout/Header";
 import Sidebar from "../components/student/layout/Sidebar";
+import ChatWidget from "../components/ChatWidget";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -32,6 +33,7 @@ function StudentLayout() {
           <Outlet />
         </main>
       </div>
+      <ChatWidget />
     </div>
   );
 }
