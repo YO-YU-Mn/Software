@@ -6,6 +6,7 @@ import StudentLayout from "./layouts/StudentLayout";
 import RegistrationPage from "./Pages/RegistrationPage";
 import SchedulePage from "./Pages/SchedulePage";
 import ProtectedRoute from './components/ProtectedRoute';
+import ScheduleRegistration from './Pages/ScheduleRegistration';
 
 
 
@@ -37,10 +38,11 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/home_page" element={<ProtectedRoute> <StudentLayout /> </ProtectedRoute>}>
-          <Route index element={<StudentDashboard />} />
-          <Route path="registration" element={<RegistrationPage />} />
-          <Route path="schedule" element={<SchedulePage />} />
-        </Route>
+  <Route index element={<StudentDashboard />} />
+  <Route path="registration" element={<RegistrationPage />} />
+  <Route path="schedule" element={<SchedulePage />} />
+  <Route path="schedule-registration" element={<ScheduleRegistration />} />
+</Route>
       </Routes>
     </BrowserRouter>
   );

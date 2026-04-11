@@ -54,7 +54,7 @@ function SchedulePage() {
       message: 'هل أنت متأكد من حذف هذه المادة؟',
       buttons: [
         {
-          label: 'yes',
+          label: 'نعم',
           onClick: async () => {
             try {
               const token = localStorage.getItem('token');
@@ -70,7 +70,7 @@ function SchedulePage() {
           }
         },
         {
-          label: 'no',
+          label: 'لا',
           onClick: () => {}
         }
       ]
@@ -84,7 +84,7 @@ function SchedulePage() {
       message: 'هل أنت متأكد من إعادة تسجيل المواد؟ سيتم حذف جميع المواد المسجلة حالياً.',
       buttons: [
         {
-          label: 'yes',
+          label: 'نعم',
           onClick: async () => {
             try {
               const token = localStorage.getItem('token');
@@ -99,35 +99,43 @@ function SchedulePage() {
           }
         },
         {
-          label: 'no',
+          label: 'لا',
           onClick: () => {}
         }
       ]
     });
   };
 
-  if (loading) return <p> Loading...</p>;
+  if (loading) return <p>جاري التحميل...</p>;
 
   if (courses.length === 0) {
-     return (
+    return (
       <div className="schedule-page">
         <div className="no-data">
           <div className="no-data-icon">📅</div>
           <h3>لا يوجد جدول مسجل</h3>
           <p>لم تقم بتسجيل أي مواد بعد</p>
-          <button 
-            className="btn-register"
-            onClick={() => {
-              if (!registrationOpen) {
-                toast.error("تسجيل المواد مغلق حالياً");
-                return;
-              }
-              navigate("/home_page/registration");
-            }}
-            disabled={!registrationOpen}
-          >
-            <span></span> تسجيل مواد الآن
-          </button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button 
+              className="btn-register"
+              onClick={() => {
+                if (!registrationOpen) {
+                  toast.error("تسجيل المواد مغلق حالياً");
+                  return;
+                }
+                navigate("/home_page/registration");
+              }}
+              disabled={!registrationOpen}
+            >
+              تسجيل مواد الآن
+            </button>
+            <button 
+              className="btn-ai-schedule"
+              onClick={() => navigate('/home_page/schedule-registration')}
+            >
+              🤖 جدول ذكي
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -140,11 +148,17 @@ function SchedulePage() {
       <div className="schedule-header">
         <h2>الجدول الدراسي</h2>
         <div className="schedule-actions">
+          <button 
+            className="btn-ai-schedule"
+            onClick={() => navigate('/home_page/schedule-registration')}
+          >
+            🤖 جدول ذكي
+          </button>
           <button className="btn-print" onClick={() => window.print()}>
-            <span></span> Print
+            🖨️ طباعة
           </button>
           <button className="btn-reset" onClick={handleReset}>
-            <span></span>  Reset
+            🔄 إعادة تعيين
           </button>
         </div>
       </div>
@@ -153,21 +167,21 @@ function SchedulePage() {
         <div className="summary-item">
           <div className="summary-icon">📚</div>
           <div className="summary-info">
-            <h4> Subjects</h4>
+            <h4>المواد</h4>
             <p>{courses.length}</p>
           </div>
         </div>
         <div className="summary-item">
           <div className="summary-icon">⏱️</div>
           <div className="summary-info">
-            <h4> Total Hours</h4>
-            <p>{totalHours} /18</p>
+            <h4>إجمالي الساعات</h4>
+            <p>{totalHours} / 18</p>
           </div>
         </div>
         <div className="summary-item">
           <div className="summary-icon">📅</div>
           <div className="summary-info">
-            <h4>Days </h4>
+            <h4>أيام الدراسة</h4>
             <p>{new Set(courses.flatMap(c => c?.schedule?.map(s => s?.day) || []).filter(Boolean)).size}</p>
           </div>
         </div>
@@ -179,23 +193,23 @@ function SchedulePage() {
             <div className="card-header">
               <h3 className="course-name">{course.title || 'بدون عنوان'}</h3>
               <span className="course-badge">
-                <span></span> {course.credits || 0} Hours
+                {course.credits || 0} ساعات
               </span>
             </div>
 
             <div className="course-details">
               <span className="detail-item">
-                <span></span> {course.instructor || 'د. أحمد محمد'}
+                👨‍🏫 {course.instructor || 'د. أحمد محمد'}
               </span>
               <span className="detail-item">
-                <span>🏛️</span> {course.department || 'علوم حاسب'}
+                🏛️ {course.department || 'علوم حاسب'}
               </span>
             </div>
 
             {course?.schedule && Array.isArray(course.schedule) && course.schedule.length > 0 && (
               <div className="schedule-timetable">
                 <div className="timetable-title">
-                  <span></span> مواعيد المحاضرات
+                  📅 مواعيد المحاضرات
                 </div>
                 <div className="timetable-grid">
                   {course.schedule.map((s, index) => (
@@ -203,7 +217,7 @@ function SchedulePage() {
                       <span className="timetable-day">{s?.day || 'غير محدد'}</span>
                       <span className="timetable-time">{s?.time || 'غير محدد'}</span>
                       <span className="timetable-location">
-                        <span></span> {s?.location || 'قاعة 101'}
+                        📍 {s?.location || 'قاعة 101'}
                       </span>
                     </div>
                   ))}
@@ -213,10 +227,10 @@ function SchedulePage() {
 
             <div className="course-info">
               <span className="info-item">
-                <span></span>  Subject Code: {course.course_id}
+                🔢 كود المادة: {course.course_id}
               </span>
               <span className="info-item">
-                <span></span> {course.credits || 0}  Hours
+                ⏱️ {course.credits || 0} ساعات
               </span>
             </div>
 
@@ -224,7 +238,7 @@ function SchedulePage() {
               className="btn-drop"
               onClick={() => handleDrop(course.course_id)}
             >
-              <span></span>  Delete
+              🗑️ حذف
             </button>
           </div>
         ))}
@@ -232,9 +246,9 @@ function SchedulePage() {
 
       {/* العرض الأسبوعي */}
       <div className="weekly-view">
-        <h3><span></span> عرض أسبوعي</h3>
+        <h3>📅 عرض أسبوعي</h3>
         <div className="weekly-grid">
-          {['Sunday', 'Monday', 'Teusday', 'Wendsday', 'Thursday', 'Friday','Saturday'].map(day => (
+          {['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'].map(day => (
             <div key={day} className="week-day">
               <div className="day-header">
                 <span className="day-name">{day}</span>
@@ -253,6 +267,91 @@ function SchedulePage() {
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        .btn-ai-schedule {
+          background: #534AB7;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+        }
+
+        .btn-ai-schedule:hover {
+          background: #3C3489;
+        }
+
+       .btn-print, .btn-reset {
+  background: white;
+  color: #534AB7;
+  border: 1px solid #e0e0e0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-print:hover, .btn-reset:hover {
+  background: #f5f5f5;
+  border-color: #534AB7;
+}
+
+        .btn-register {
+          background: #534AB7;
+          color: white;
+          border: none;
+          padding: 10px 24px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .btn-register:hover:not(:disabled) {
+          background: #3C3489;
+        }
+
+        .btn-register:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .btn-drop {
+          background: #fee2e2;
+          color: #dc2626;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+          width: 100%;
+          justify-content: center;
+          margin-top: 12px;
+        }
+
+        .btn-drop:hover {
+          background: #2629dc;
+          color: white;
+        }
+      `}</style>
     </div>
   );
 }
