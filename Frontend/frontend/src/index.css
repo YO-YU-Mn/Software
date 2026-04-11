@@ -1,0 +1,22 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f6f9;
+  color: #1f2937;
+  line-height: 1.6;
+  width: 100%;
+  min-height: 100vh;
+  display: block; 
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: block;
+}
