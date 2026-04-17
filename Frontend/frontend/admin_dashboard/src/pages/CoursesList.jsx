@@ -133,6 +133,9 @@ export function CoursesList({ setPage }) {
         )}
       </div>
 
+
+      
+
       {showAdd && (
         <div className="card mb-5" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}>
           <div className="font-semibold mb-3" style={{ color: theme.white, fontSize: 14 }}>New Course</div>

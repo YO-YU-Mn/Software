@@ -19,6 +19,7 @@ const newsRoutes = require("./routes/newsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const statsRoutes = require('./routes/statsRoutes');
+const bulkImportRoutes = require('./routes/BulkImport');
 
 
 const app = express(); 
@@ -37,6 +38,7 @@ app.use('/notifications', notificationRoutes);
 app.use('/news', newsRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/stats', statsRoutes);
+app.use('/bulkImport', bulkImportRoutes);
 
 
 //login Authontication

@@ -55,6 +55,15 @@ function Sidebar({ open, setOpen, registrationOpen }) {
           جدولي الدراسي
         </NavLink>
 
+          <NavLink
+          to="/home_page/schedule-registration"
+          className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          onClick={handleLinkClick}
+        >
+          AI Registration
+        </NavLink>
+
+
         <NavLink
           to="/"
           className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
@@ -62,6 +71,8 @@ function Sidebar({ open, setOpen, registrationOpen }) {
         >
           تسجيل خروج
         </NavLink>
+
+
       </nav>
     </div>
   );
