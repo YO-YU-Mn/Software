@@ -1,4 +1,4 @@
-// Features: Pull-to-refresh + proper back navigation (goes to previous page, not login)
+﻿// Features: Pull-to-refresh + proper back navigation (goes to previous page, not login)
 import { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   BackHandler,
+  TouchableOpacity,
 } from "react-native";
 import {API_BASE_URL} from '../../config';
 import { useFocusEffect } from "@react-navigation/native";
@@ -19,35 +20,35 @@ import NewsCard from "../../components/student/NewsCard";
 import { useRouter } from 'expo-router';
 
 function StudentDashboard({ navigation }) {
-  // داخل المكون (Component)
-const router = useRouter();
+  // component function
+  const router = useRouter();
 
   const student = useStudent();
   const [notifications, setNotifications]   = useState([]);
   const [regStatus, setRegStatus]           = useState("closed");
   const [loadingStatus, setLoadingStatus]   = useState(true);
   const [refreshing, setRefreshing]         = useState(false);  // ← pull-to-refresh state
+  const [checkingAuth, setCheckingAuth]     = useState(true);
 
-  /* ─────────────────────────────────────────
-     Fetch functions (reused by both useEffect
-     and the pull-to-refresh handler)
-  ───────────────────────────────────────── */
+  /* ------------------------------------------------------------------
+     Fetch functions (reused by both useEffect and the pull-to-refresh handler)
+  ------------------------------------------------------------------ */
 const fetchNotifications = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
-    console.log("token of user is  : ", token); // لنتأكد أن التوكن موجود
+    console.log("token of user is:", token); // token may be missing
 
     const response = await fetch(`${API_BASE_URL}/notifications/get`, {
       method: 'GET',
       headers: { 
-        'Authorization': token, // تأكد إذا كان السيرفر يحتاج كلمة Bearer قبل التوكن
+        'Authorization': token, // authorization header uses token
         'Content-Type': 'application/json'
       },
     });
 
     if (!response.ok) {
-      console.log("رقم خطأ السيرفر:", response.status); 
-      throw new Error(`خطأ من السيرفر برقم: ${response.status}`);
+      console.log("Server error:", response.status);
+      throw new Error(`Failed to fetch notifications: ${response.status}`);
     }
 
     const data = await response.json();
@@ -72,18 +73,30 @@ const fetchNotifications = async () => {
     }
   };
 
-  /* ─────────────────────────────────────────
+  /* ------------------------------------------------------------------
      Initial load
-  ───────────────────────────────────────── */
+  ------------------------------------------------------------------ */
   useEffect(() => {
     fetchNotifications();
     fetchRegistrationStatus();
   }, []);
 
-  /* ─────────────────────────────────────────
+  useEffect(() => {
+    AsyncStorage.getItem('token')
+      .then((token) => {
+        if (!token) {
+          router.replace('/login');
+        } else {
+          setCheckingAuth(false);
+        }
+      })
+      .catch(() => router.replace('/login'));
+  }, [router]);
+
+  /* ------------------------------------------------------------------
      Pull-to-refresh handler
      Called when user pulls down from the top
-  ───────────────────────────────────────── */
+  ------------------------------------------------------------------ */
   const onRefresh = useCallback(async () => {
     setRefreshing(true);                      // shows the spinner
     await Promise.all([
@@ -93,20 +106,29 @@ const fetchNotifications = async () => {
     setRefreshing(false);                     // hides the spinner
   }, []);
 
-  /* ─────────────────────────────────────────
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(['token', 'name']);
+      router.replace('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  /* ------------------------------------------------------------------
      Hardware back button (Android)
      Override default behavior so it goes to
      the previous screen in the stack,
      NOT to the login screen.
-  ───────────────────────────────────────── */
+  ------------------------------------------------------------------ */
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
         if (router && router.canGoBack && router.canGoBack()) {
-          router.back();   // ← goes to the screen before this one
-          return true;           // ← prevents default (which would close the app / go to login)
+          router.back();   // goes to the previous screen
+          return true;           // prevents default behavior from closing the app
         }
-        return false;            // ← let default behavior happen if no screen behind
+return false;            // let default behavior happen if no screen behind
       };
 
       const subscription = BackHandler.addEventListener(
@@ -118,10 +140,10 @@ const fetchNotifications = async () => {
     }, [navigation])
   );
 
-  /* ─────────────────────────────────────────
+  /* ------------------------------------------------------------------
      Loading state (first load only)
-  ───────────────────────────────────────── */
-  if (!student) {
+  ------------------------------------------------------------------ */
+  if (checkingAuth || !student) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#2563eb" />
@@ -130,15 +152,15 @@ const fetchNotifications = async () => {
     );
   }
 
-  /* ─────────────────────────────────────────
+  /* ------------------------------------------------------------------
      Main render
-  ───────────────────────────────────────── */
+  ------------------------------------------------------------------ */
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-      // ↓ This is all you need for pull-to-refresh
+      // This is all you need for pull-to-refresh
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -150,6 +172,12 @@ const fetchNotifications = async () => {
         />
       }
     >
+      <View style={styles.headerRow}>
+        <Text style={styles.welcomeText}>مرحبا بك في الملف الشخصي</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>تسجيل خروج</Text>
+        </TouchableOpacity>
+      </View>
       <StudentInfoCard student={student} />
       <RegistrationStatusCard status={regStatus} loading={loadingStatus} />
 
@@ -207,4 +235,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 20,
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 12,
+  },
+  welcomeText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  logoutButton: {
+    backgroundColor: "#ef4444",
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  logoutText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+  },
 });
+

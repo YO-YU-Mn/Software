@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,12 @@ import {
   StyleSheet,
   I18nManager,
   SafeAreaView,
-  FlatList,
   Alert,
 } from "react-native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import useStudent from "../../hooks/useStudent";
+import { API_BASE_URL } from '../../config';
 
 // ─── Force RTL ───────────────────────────────────────────────────────────────
 I18nManager.forceRTL(true);
@@ -39,117 +42,18 @@ const C = {
 };
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-const COURSES = [
-  {
-    code: "CS301",
-    name: "هياكل البيانات والخوارزميات",
-    dept: "CS",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["8:00 ص — 10:00 ص", "12:00 م — 2:00 م"] },
-      { day: "الثلاثاء", times: ["8:00 ص — 10:00 ص", "12:00 م — 2:00 م"] },
-    ],
-  },
-  {
-    code: "CS302",
-    name: "قواعد البيانات",
-    dept: "CS",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الاثنين", times: ["10:00 ص — 12:00 م", "2:00 م — 4:00 م"] },
-      { day: "الأربعاء", times: ["10:00 ص — 12:00 م", "2:00 م — 4:00 م"] },
-    ],
-  },
-  {
-    code: "CS303",
-    name: "الشبكات والاتصالات",
-    dept: "CS",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["10:00 ص — 12:00 م", "3:00 م — 5:00 م"] },
-      { day: "الثلاثاء", times: ["10:00 ص — 12:00 م", "3:00 م — 5:00 م"] },
-    ],
-  },
-  {
-    code: "CS401",
-    name: "الذكاء الاصطناعي",
-    dept: "CS",
-    hours: 3,
-    type: "اختياري",
-    slots: [
-      { day: "الاثنين", times: ["8:00 ص — 10:00 ص", "4:00 م — 6:00 م"] },
-      { day: "الأربعاء", times: ["8:00 ص — 10:00 ص", "4:00 م — 6:00 م"] },
-    ],
-  },
-  {
-    code: "CS402",
-    name: "تطوير تطبيقات الويب",
-    dept: "CS",
-    hours: 3,
-    type: "اختياري",
-    slots: [
-      { day: "الثلاثاء", times: ["2:00 م — 4:00 م"] },
-      { day: "الخميس", times: ["2:00 م — 4:00 م"] },
-    ],
-  },
-  {
-    code: "MATH301",
-    name: "الإحصاء والاحتمالات",
-    dept: "MATH",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["12:00 م — 2:00 م", "5:00 م — 7:00 م"] },
-      { day: "الثلاثاء", times: ["12:00 م — 2:00 م", "5:00 م — 7:00 م"] },
-    ],
-  },
-  {
-    code: "MATH302",
-    name: "الجبر الخطي",
-    dept: "MATH",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الاثنين", times: ["8:00 ص — 10:00 ص"] },
-      { day: "الأربعاء", times: ["8:00 ص — 10:00 ص"] },
-    ],
-  },
-  {
-    code: "ENG301",
-    name: "أنظمة التشغيل",
-    dept: "ENG",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["2:00 م — 4:00 م"] },
-      { day: "الثلاثاء", times: ["2:00 م — 4:00 م"] },
-    ],
-  },
-  {
-    code: "ENG302",
-    name: "معمارية الحاسب",
-    dept: "ENG",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الاثنين", times: ["12:00 م — 2:00 م", "4:00 م — 6:00 م"] },
-      { day: "الأربعاء", times: ["12:00 م — 2:00 م", "4:00 م — 6:00 م"] },
-    ],
-  },
-  {
-    code: "ENG401",
-    name: "معالجة الإشارات الرقمية",
-    dept: "ENG",
-    hours: 3,
-    type: "اختياري",
-    slots: [
-      { day: "الخميس", times: ["10:00 ص — 12:00 م", "3:00 م — 5:00 م"] },
-    ],
-  },
-];
+type Course = {
+  id: string;
+  code: string;
+  name: string;
+  hours: number;
+  instructor: string;
+  department?: string;
+  type?: string;
+  schedule: Array<{ day: string; time: string; location?: string }>;
+  canRegister: boolean;
+  isRegistered: boolean;
+};
 
 const FILTERS = [
   { key: "all", label: "الكل" },
@@ -166,10 +70,7 @@ const PREFS = [
   { key: "مسائي", icon: "🌆", label: "مسائي", desc: "من 2 م حتى 8 م" },
 ];
 
-const ANTHROPIC_API_KEY = "YOUR_API_KEY_HERE"; // ← ضع مفتاحك هنا
-
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Course = (typeof COURSES)[0];
 type ScheduleItem = {
   code: string;
   name: string;
@@ -187,83 +88,106 @@ type ResultState =
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function CourseRegistrationApp() {
+  const student = useStudent();
   const [activeFilter, setActiveFilter] = useState("all");
+  const [coursesList, setCoursesList] = useState<Course[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [modalCourse, setModalCourse] = useState<Course | null>(null);
   const [chosenPref, setChosenPref] = useState<string | null>(null);
   const [result, setResult] = useState<ResultState>({ type: "idle" });
+  const [pageLoading, setPageLoading] = useState(true);
 
-  const filtered = COURSES.filter((c) => {
+  const filtered = coursesList.filter((c) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "إجباري" || activeFilter === "اختياري")
       return c.type === activeFilter;
-    return c.dept === activeFilter;
+    return c.department === activeFilter;
   });
 
-  const totalHours = [...selected].reduce((sum, code) => {
-    const c = COURSES.find((x) => x.code === code);
+  const totalHours = [...selected].reduce((sum, id) => {
+    const c = coursesList.find((x) => x.id === id);
     return sum + (c ? c.hours : 0);
   }, 0);
 
-  const toggleCourse = (code: string) => {
+  const toggleCourse = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
 
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const res = await axios.get(`${API_BASE_URL}/courses/available-courses`, {
+          headers: { Authorization: token },
+        });
+        const mapped: Course[] = res.data.map((course: any) => ({
+          id: course.id,
+          code: course.id,
+          name: course.name,
+          hours: course.hours,
+          instructor: course.instructor || "غير محدد",
+          department: course.department || "",
+          type: course.type || (course.prerequisitesMet ? "إجباري" : "اختياري"),
+          schedule: course.schedule || [],
+          canRegister: Boolean(course.canRegister),
+          isRegistered: Boolean(course.isRegistered),
+        }));
+        setCoursesList(mapped);
+      } catch (err) {
+        console.error("Failed to load courses:", err);
+        Alert.alert("خطأ","فشل تحميل المواد من السيرفر.");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
   const generateSchedule = async (pref: string) => {
     setResult({ type: "loading" });
-    const selectedCourses = [...selected].map((code) =>
-      COURSES.find((c) => c.code === code)!
-    );
-    const coursesList = selectedCourses
+    const selectedCourses = [...selected]
+      .map((id) => coursesList.find((c) => c.id === id))
+      .filter((course): course is Course => Boolean(course));
+
+    const coursesListText = selectedCourses
       .map((c) => {
-        const slotsDesc = c.slots
-          .map((s) => s.day + ": " + s.times.join(" أو "))
+        const scheduleText = c.schedule
+          .map((s) => `${s.day} ${s.time}${s.location ? ` - ${s.location}` : ""}`)
           .join(" | ");
-        return `- ${c.name} (${c.code}) | ${c.hours} ساعات | ${c.type} | المواعيد المتاحة: ${slotsDesc}`;
+        return `- ${c.name} (${c.id}) | ${c.hours} ساعات | ${c.type || ""} | مواعيد: ${scheduleText}`;
       })
       .join("\n");
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [
-            {
-              role: "user",
-              content: `أنت مساعد أكاديمي. الطالب اختار هذه المقررات وتفضيله للجدول هو: ${pref}.
+      const token = await AsyncStorage.getItem("token");
+      const response = await axios.post(
+        `${API_BASE_URL}/advisor/ask`,
+        {
+          message: `الطالب يريد جدولاً لهذه المقررات مع تفضيل المواعيد: ${pref}.
 
-المقررات المختارة ومواعيدها المتاحة:
-${coursesList}
+المقررات المختارة:
+${coursesListText}
 
-المطلوب: اختر لكل مادة الموعد الأنسب من المواعيد المتاحة بما يتوافق مع التفضيل "${pref}" وبدون أي تعارض في المواعيد.
-
-أجب فقط بـ JSON بهذا الشكل بدون أي نص إضافي أو backticks:
+المطلوب: اقترح جدولاً بدون تعارض، وأجب فقط ب JSON بهذا الشكل:
 {"schedule":[{"code":"...","name":"...","hours":0,"day":"...","time":"..."}],"notes":"..."}`,
-            },
-          ],
-        }),
-      });
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-      const text = data.content.map((i: any) => i.text || "").join("");
-      const clean = text.replace(/```json|```/g, "").trim();
+        },
+        {
+          headers: { Authorization: token },
+        }
+      );
+
+      const reply = response.data.reply || "";
+      const clean = reply.replace(/```json|```/g, "").trim();
       const parsed: ScheduleResult = JSON.parse(clean);
       setResult({ type: "result", data: parsed, pref });
     } catch (e: any) {
-      setResult({ type: "error", message: e.message });
+      console.error("Schedule generation failed:", e);
+      setResult({ type: "error", message: e?.message || "حصل خطأ" });
     }
   };
 
@@ -285,11 +209,17 @@ ${coursesList}
 
         {/* Student Info */}
         <View style={s.infoRow}>
-          <InfoCard label="اسم الطالب" value="أحمد محمد علي" />
-          <InfoCard label="الرقم الجامعي" value="20210045" />
+          <InfoCard
+            label="اسم الطالب"
+            value={student?.name || "جار التحميل..."}
+          />
+          <InfoCard
+            label="الرقم الجامعي"
+            value={student?.code || "—"}
+          />
           <InfoCard
             label="الساعات / المسموح"
-            value={`${totalHours} / 18 ساعة`}
+            value={`${totalHours} / 18`}
           />
         </View>
 
@@ -405,17 +335,18 @@ ${coursesList}
                   </TouchableOpacity>
                 </View>
                 <ScrollView>
-                  {modalCourse.slots.length === 0 ? (
+                  {modalCourse.schedule.length === 0 ? (
                     <Text style={s.noSlots}>لا توجد مواعيد متاحة حالياً</Text>
                   ) : (
-                    modalCourse.slots.map((slot, i) => (
+                    modalCourse.schedule.map((slot, i) => (
                       <View key={i} style={s.slotGroup}>
                         <Text style={s.slotDay}>{slot.day}</Text>
-                        {slot.times.map((t, j) => (
-                          <View key={j} style={s.slotTime}>
-                            <Text style={s.slotTimeText}>{t}</Text>
-                          </View>
-                        ))}
+                        <View style={s.slotTime}>
+                          <Text style={s.slotTimeText}>{slot.time}</Text>
+                          {slot.location ? (
+                            <Text style={[s.slotTimeText, { marginTop: 4 }]}>المكان: {slot.location}</Text>
+                          ) : null}
+                        </View>
                       </View>
                     ))
                   )}
@@ -466,7 +397,7 @@ function CourseCard({
       </Text>
       <View style={s.courseMeta}>
         <View style={[s.badge, s.badgeDept]}>
-          <Text style={[s.badgeText, { color: C.blue }]}>{course.dept}</Text>
+          <Text style={[s.badgeText, { color: C.blue }]}>{course.department || "—"}</Text>
         </View>
         <View style={[s.badge, s.badgeHours]}>
           <Text style={[s.badgeText, { color: C.green }]}>
@@ -474,7 +405,7 @@ function CourseCard({
           </Text>
         </View>
         <View style={[s.badge, s.badgeType]}>
-          <Text style={[s.badgeText, { color: C.amber }]}>{course.type}</Text>
+          <Text style={[s.badgeText, { color: C.amber }]}>{course.type || "—"}</Text>
         </View>
       </View>
       <View style={s.cardActions}>
@@ -505,7 +436,7 @@ function ResultArea({
 }: {
   state: ResultState;
   chosenPref: string | null;
-  setChosenPref: (p: string) => void;
+  setChosenPref: (p: string | null) => void;
   onConfirm: () => void;
   onRetry: () => void;
 }) {

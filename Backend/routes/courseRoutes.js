@@ -199,6 +199,8 @@ router.get("/available-courses", auth, async (req, res) => {
                 name: course.title,
                 hours: course.credits,
                 instructor: course.instructor,
+                department: course.department,
+                type: prerequisitesMet ? "إجباري" : "اختياري",
                 schedule: course.schedule,
                 canRegister,
                 isRegistered,   // إرسال هذه المعلومة للفرونت

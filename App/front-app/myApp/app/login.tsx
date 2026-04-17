@@ -1,23 +1,23 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import StudentDashboard from './StudentDashboard';
+import LoginCard from '../components/Login/LoginCard';
 
-export default function HomeScreen() {
+export default function LoginScreen() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     AsyncStorage.getItem('token')
       .then((token) => {
-        if (!token) {
-          router.replace('/login');
+        if (token) {
+          router.replace('/(tabs)');
         } else {
           setCheckingAuth(false);
         }
       })
-      .catch(() => router.replace('/login'));
+      .catch(() => setCheckingAuth(false));
   }, [router]);
 
   if (checkingAuth) {
@@ -28,5 +28,5 @@ export default function HomeScreen() {
     );
   }
 
-  return <StudentDashboard />;
+  return <LoginCard />;
 }

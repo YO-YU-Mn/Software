@@ -51,12 +51,12 @@ function LoginCard() {
                     // فتح رابط خارجي للأدمن
                     console.log("Admin login successful, opening admin panel...");
                     Linking.openURL('http://localhost:5174');
-                    router.push('/RegistrationPage');
+                    router.replace('/RegistrationPage');
                 } else {
                     // الانتقال لصفحة الطالب داخل التطبيق
                     console.log("Student login successful, navigating to dashboard...");
                     console.log("student ready ! ");
-                   router.push('/StudentDashboard');
+                    router.replace('/(tabs)');
                 }
             } else {
                 setError(data.message);
