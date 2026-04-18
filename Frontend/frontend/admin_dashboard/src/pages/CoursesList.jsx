@@ -5,6 +5,7 @@ import { DetailPanel } from "../components/DetailPanel";
 import axios from "axios";
 import toast from 'react-hot-toast';
 import Select from 'react-select';
+import * as XLSX from 'xlsx';
 
 export function CoursesList({ setPage }) {
   const { theme } = useTheme();
@@ -12,30 +13,36 @@ export function CoursesList({ setPage }) {
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAdd, setShowAdd] = useState(false);
   const [allCourses, setAllCourses] = useState([]);
-
+  const [panel, setPanel] = useState(null);
+  
+  // تبويبات
+  const [tab, setTab] = useState("addCourse"); // "addCourse", "bulkUpload", "allCourses"
+  
+  // نموذج الإضافة الفردية
   const [form, setForm] = useState({ 
     course_id: "", title: "", credits: "", instructor: "", department: "", 
     level: "", semester: "", capacity: "", prerequisites: [], schedule: [] 
   });
   const [newSchedule, setNewSchedule] = useState({ day: "", time: "", location: "" });
-  const [panel, setPanel] = useState(null);
-
-  const days = ["Sunday", "Monday", "Tuesday", "Wendsday", "Thursday", "Friday", "Saturday"];
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const times = ["08:00-10:00", "10:00-12:00", "12:00-14:00", "14:00-16:00", "16:00-18:00", "18:00-20:00"];
 
+  // حالات رفع الملف
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+
+  // جلب البيانات
   const fetchAllCourses = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await axios.get('http://localhost:9000/courses/allcourses', { headers: { Authorization: token } });
-    setAllCourses(res.data);
-    console.log('Loaded courses for prerequisites:', res.data); // للتأكد
-  } catch (err) {
-    console.error(err);
-    toast.error('فشل تحميل قائمة الكورسات');
-  }
-};
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:9000/courses/allcourses', { headers: { Authorization: token } });
+      setAllCourses(res.data);
+    } catch (err) {
+      toast.error('فشل تحميل قائمة الكورسات');
+    }
+  };
 
   const fetchCourses = async () => {
     try {
@@ -54,6 +61,7 @@ export function CoursesList({ setPage }) {
     fetchAllCourses();
   }, []);
 
+  // دوال الإضافة الفردية
   const addScheduleItem = () => {
     if (!newSchedule.day || !newSchedule.time) {
       toast.error("يرجى اختيار اليوم والوقت");
@@ -70,11 +78,6 @@ export function CoursesList({ setPage }) {
     const newList = [...form.schedule];
     newList.splice(index, 1);
     setForm({ ...form, schedule: newList });
-  };
-
-  const handlePrerequisiteChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions, option => option.value);
-    setForm({ ...form, prerequisites: selected });
   };
 
   const handleAdd = async () => {
@@ -98,7 +101,6 @@ export function CoursesList({ setPage }) {
       };
       await axios.post('http://localhost:9000/courses/addCourse', payload, { headers: { Authorization: token } });
       toast.success('تمت إضافة المادة بنجاح');
-      setShowAdd(false);
       setForm({ course_id: "", title: "", credits: "", instructor: "", department: "", level: "", semester: "", capacity: "", prerequisites: [], schedule: [] });
       fetchCourses();
       fetchAllCourses();
@@ -118,6 +120,53 @@ export function CoursesList({ setPage }) {
     }
   };
 
+  // دوال رفع الملف
+  const downloadCourseTemplate = () => {
+    const headers = [
+      "course_id", "title", "credits", "instructor", "department",
+      "level", "semester", "capacity", "prerequisites", "schedule"
+    ];
+    const sampleRow = [
+      "CS101", "Introduction to Programming", "3", "Dr. Ahmed", "CS",
+      "1", "1", "30", "CS100", '[{"day":"Sunday","time":"10:00-12:00","location":"Hall A"}]'
+    ];
+    const data = [headers, sampleRow];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "CoursesTemplate");
+    XLSX.writeFile(wb, "courses_template.xlsx");
+    toast.success("تم تحميل النموذج بنجاح");
+  };
+
+  const handleBulkUpload = async () => {
+    if (!file) {
+      toast.error('يرجى اختيار ملف أولاً');
+      return;
+    }
+    setUploading(true);
+    setUploadResult(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post('http://localhost:9000/bulkCourses/bulk-upload', formData, {
+        headers: { Authorization: token, 'Content-Type': 'multipart/form-data' }
+      });
+      setUploadResult(res.data);
+      toast.success(`تم إضافة ${res.data.successCount} كورس بنجاح`);
+      fetchCourses();
+      fetchAllCourses();
+      setFile(null);
+      const fileInput = document.getElementById('bulk-course-input');
+      if (fileInput) fileInput.value = '';
+    } catch (err) {
+      console.error(err);
+      toast.error('فشل رفع الملف');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) return <p style={{ color: theme.muted, textAlign: 'center', padding: '2rem' }}>جاري التحميل...</p>;
 
   return (
@@ -125,19 +174,34 @@ export function CoursesList({ setPage }) {
       <button onClick={() => setPage("dashboard")} className="btn-back" style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}>
         ← Back
       </button>
+      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>Courses</h1>
 
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="m-0 text-3xl font-extrabold" style={{ color: theme.white }}>Courses</h1>
-        {!showAdd && (
-          <button onClick={() => setShowAdd(true)} className="btn-primary px-5 py-2 text-sm" style={{ background: G }}>+ Add Course</button>
-        )}
+      {/* التبويبات */}
+      <div className="flex gap-0 mb-6" style={{ background: theme.card, borderRadius: 10, border: `1px solid ${theme.border}`, width: "fit-content" }}>
+        {[
+          ["addCourse", "➕ Add Course"],
+          ["bulkUpload", "📂 Add File Courses"],
+          ["allCourses", "📋 All Courses"]
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className="btn"
+            style={{
+              padding: "10px 26px",
+              borderRadius: 9,
+              background: tab === id ? G : "transparent",
+              color: tab === id ? "#fff" : theme.muted
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-
-      
-
-      {showAdd && (
-        <div className="card mb-5" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}>
+      {/* تبويب إضافة كورس فردي */}
+      {tab === "addCourse" && (
+        <div className="card" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}>
           <div className="font-semibold mb-3" style={{ color: theme.white, fontSize: 14 }}>New Course</div>
           <div className="grid grid-cols-2 gap-2 mb-3">
             <input placeholder="Course ID *" value={form.course_id} onChange={e => setForm({...form, course_id: e.target.value})} className="input-field" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }} />
@@ -149,84 +213,54 @@ export function CoursesList({ setPage }) {
             <input placeholder="Semester *" type="number" value={form.semester} onChange={e => setForm({...form, semester: e.target.value})} className="input-field" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }} />
             <input placeholder="Capacity *" type="number" value={form.capacity} onChange={e => setForm({...form, capacity: e.target.value})} className="input-field" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }} />
           </div>
-
-         <div className="mb-3">
-  <label className="input-label" style={{ color: theme.muted }}>Prerequisites </label>
-  <Select
-    isMulti
-    options={allCourses.map(c => ({ value: c.course_id, label: `${c.course_id} - ${c.title}` }))}
-    value={form.prerequisites.map(p => {
-      const found = allCourses.find(c => c.course_id === p);
-      return { value: p, label: found ? `${found.course_id} - ${found.title}` : p };
-    })}
-    onChange={(selected) => {
-      setForm({ ...form, prerequisites: selected.map(s => s.value) });
-    }}
-    placeholder={allCourses.length === 0 ? "جاري تحميل المواد..." : "  choose prerequisites ..."}
-    isLoading={allCourses.length === 0}
-    noOptionsMessage={() => "لا توجد مواد متاحة"}
-    styles={{
-      control: (base, { isFocused }) => ({
-        ...base,
-        background: theme.surface,
-        borderColor: isFocused ? theme.accent : theme.border,
-        boxShadow: 'none',
-        '&:hover': { borderColor: theme.accent },
-        minHeight: '42px',
-      }),
-      menu: (base) => ({
-        ...base,
-        background: theme.surface,
-        zIndex: 1000,
-      }),
-      option: (base, { isFocused, isSelected }) => ({
-        ...base,
-        background: isSelected ? theme.accent : (isFocused ? `${theme.accent}30` : theme.surface),
-        color: theme.text,
-      }),
-      multiValue: (base) => ({
-        ...base,
-        background: `${theme.accent}20`,
-        borderRadius: '6px',
-      }),
-      multiValueLabel: (base) => ({
-        ...base,
-        color: theme.text,
-        fontSize: '12px',
-      }),
-      multiValueRemove: (base) => ({
-        ...base,
-        color: theme.muted,
-        ':hover': {
-          background: theme.red,
-          color: '#fff',
-        },
-      }),
-      placeholder: (base) => ({
-        ...base,
-        color: theme.muted,
-      }),
-      input: (base) => ({
-        ...base,
-        color: theme.text,
-      }),
-    }}
-  />
-</div>
-
-          {/* Schedule */}
           <div className="mb-3">
-            <label className="input-label" style={{ color: theme.muted }}>Schedule </label>
+            <label className="input-label" style={{ color: theme.muted }}>Prerequisites</label>
+            <Select
+              isMulti
+              options={allCourses.map(c => ({ value: c.course_id, label: `${c.course_id} - ${c.title}` }))}
+              value={form.prerequisites.map(p => {
+                const found = allCourses.find(c => c.course_id === p);
+                return { value: p, label: found ? `${found.course_id} - ${found.title}` : p };
+              })}
+              onChange={(selected) => setForm({ ...form, prerequisites: selected.map(s => s.value) })}
+              placeholder="اختر المواد المطلوبة..."
+              isLoading={allCourses.length === 0}
+              noOptionsMessage={() => "لا توجد مواد متاحة"}
+              styles={{
+                control: (base, { isFocused }) => ({
+                  ...base,
+                  background: theme.surface,
+                  borderColor: isFocused ? theme.accent : theme.border,
+                  boxShadow: 'none',
+                  '&:hover': { borderColor: theme.accent },
+                  minHeight: '42px',
+                }),
+                menu: (base) => ({ ...base, background: theme.surface, zIndex: 1000 }),
+                option: (base, { isFocused, isSelected }) => ({
+                  ...base,
+                  background: isSelected ? theme.accent : (isFocused ? `${theme.accent}30` : theme.surface),
+                  color: theme.text,
+                }),
+                multiValue: (base) => ({ ...base, background: `${theme.accent}20`, borderRadius: '6px' }),
+                multiValueLabel: (base) => ({ ...base, color: theme.text, fontSize: '12px' }),
+                multiValueRemove: (base) => ({ ...base, color: theme.muted, ':hover': { background: theme.red, color: '#fff' } }),
+                placeholder: (base) => ({ ...base, color: theme.muted }),
+                input: (base) => ({ ...base, color: theme.text }),
+              }}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="input-label" style={{ color: theme.muted }}>Schedule</label>
             <div className="flex gap-2 mb-2">
               <select value={newSchedule.day} onChange={e => setNewSchedule({...newSchedule, day: e.target.value})} className="input-field flex-1" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}>
-                <option value=""> Choose Day</option>
+                <option value="">Choose Day</option>
                 {days.map(day => <option key={day} value={day}>{day}</option>)}
               </select>
               <select value={newSchedule.time} onChange={e => setNewSchedule({...newSchedule, time: e.target.value})} className="input-field flex-1" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}>
-                <option value=""> Choose Time</option>
+                <option value="">Choose Time</option>
                 {times.map(time => <option key={time} value={time}>{time}</option>)}
               </select>
-              <input type="text" placeholder="Place " value={newSchedule.location} onChange={e => setNewSchedule({...newSchedule, location: e.target.value})} className="input-field flex-1" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }} />
+              <input type="text" placeholder="Place" value={newSchedule.location} onChange={e => setNewSchedule({...newSchedule, location: e.target.value})} className="input-field flex-1" style={{ background: theme.surface, borderColor: theme.border, color: theme.text }} />
               <button onClick={addScheduleItem} className="btn" style={{ background: theme.accent, color: "#fff", padding: "0 12px" }}>+</button>
             </div>
             {form.schedule.length > 0 && (
@@ -240,61 +274,95 @@ export function CoursesList({ setPage }) {
               </div>
             )}
           </div>
-
           <div className="flex gap-2">
             <button onClick={handleAdd} className="btn" style={{ background: theme.green, color: theme.bg, padding: "8px 18px", fontWeight: 700 }}>Save</button>
-            <button onClick={() => setShowAdd(false)} className="btn" style={{ background: theme.border, color: theme.text, padding: "8px 18px" }}>Cancel</button>
+            <button onClick={() => setForm({ course_id: "", title: "", credits: "", instructor: "", department: "", level: "", semester: "", capacity: "", prerequisites: [], schedule: [] })} className="btn" style={{ background: theme.border, color: theme.text, padding: "8px 18px" }}>Clear</button>
           </div>
         </div>
       )}
 
-      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
-        {courses.map(c => {
-          const pct = c.capacity ? Math.round((c.enrolledStudents / c.capacity) * 100) : 0;
-          const color = DEPT_COLORS[c.department] || theme.accent;
-          const full = c.enrolledStudents >= c.capacity;
-          return (
-            <div
-              key={c._id}
-              onClick={() => setPanel(c)}
-              className="card cursor-pointer"
-              style={{ background: theme.card, borderColor: theme.border, padding: 20 }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = color + "55"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = theme.border; e.currentTarget.style.transform = "none"; }}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <div className="font-bold" style={{ color: theme.white, fontSize: 14, marginBottom: 3 }}>{c.title}</div>
-                  <div className="text-sm" style={{ color }}>{c.instructor}</div>
-                </div>
-                <span className="px-2 py-1 rounded-full text-xs font-semibold" style={{ background: `${color}20`, color }}>{c.credits} cr.</span>
+      {/* تبويب رفع ملف الكورسات */}
+      {tab === "bulkUpload" && (
+        <div className="grid grid-cols-2 gap-6">
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Upload Excel File</div>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="input-label" style={{ color: theme.muted }}>Choose Excel file (.xlsx, .xls, .csv)</label>
+                <input id="bulk-course-input" type="file" accept=".xlsx, .xls, .csv" onChange={e => setFile(e.target.files[0])} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text, padding: '8px' }} />
               </div>
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="text-center p-3 rounded" style={{ background: theme.surface }}>
-                  <div className="text-xs uppercase tracking-wider" style={{ color: theme.muted, marginBottom: 3 }}>Enrolled</div>
-                  <div className="text-lg font-extrabold" style={{ color: theme.accent }}>{c.enrolledStudents}</div>
-                </div>
-                <div className="text-center p-3 rounded" style={{ background: theme.surface }}>
-                  <div className="text-xs uppercase tracking-wider" style={{ color: theme.muted, marginBottom: 3 }}>Capacity</div>
-                  <div className="text-lg font-extrabold" style={{ color: full ? theme.red : theme.green }}>{c.enrolledStudents}/{c.capacity}</div>
-                </div>
+              <div className="flex gap-3">
+                <button onClick={handleBulkUpload} disabled={!file || uploading} className="btn btn-primary flex-1" style={{ background: G, padding: '12px' }}>{uploading ? 'Uploading...' : 'Upload File'}</button>
+                <button onClick={downloadCourseTemplate} className="btn" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.accent, padding: '12px' }}>📥 Download Template</button>
               </div>
-              <div className="progress-bar" style={{ background: theme.border }}>
-                <div className="progress-fill" style={{ width: `${Math.min(pct, 100)}%`, background: pct >= 100 ? theme.red : pct >= 80 ? theme.yellow : color }} />
-              </div>
-              {full && <div className="mt-2 text-center text-xs font-bold py-1 rounded" style={{ background: `${theme.red}15`, color: theme.red }}>⚠ FULL</div>}
+              {uploadResult && (
+                <div className="mt-4">
+                  <p style={{ color: theme.green }}>✅ Successfully added: {uploadResult.successCount} courses</p>
+                  {uploadResult.errors && uploadResult.errors.length > 0 && (
+                    <div style={{ color: theme.red, marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                      <strong>Errors:</strong>
+                      <ul>
+                        {uploadResult.errors.map((err, idx) => (
+                          <li key={idx}>{typeof err === 'object' ? `Row ${err.row}: ${err.errors.join(', ')}` : err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
+          </div>
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>File Format Instructions</div>
+            <div style={{ color: theme.muted, fontSize: '13px', lineHeight: 1.6 }}>
+              <p>The Excel file should contain the following columns (first row as headers):</p>
+              <ul style={{ paddingLeft: '1.5rem', marginTop: '0.5rem' }}>
+                <li><strong>course_id</strong> (required, unique)</li>
+                <li><strong>title</strong> (required)</li>
+                <li><strong>credits</strong> (required, number 1-6)</li>
+                <li><strong>instructor</strong> (required)</li>
+                <li><strong>department</strong> (required, one of: CS, Physics, Chem, Math, Bio)</li>
+                <li><strong>level</strong> (required, number 1-4)</li>
+                <li><strong>semester</strong> (required, number 1-2)</li>
+                <li><strong>capacity</strong> (required, positive number)</li>
+                <li><strong>prerequisites</strong> (optional, comma-separated course IDs)</li>
+                <li><strong>schedule</strong> (optional, JSON array of objects with day, time, location)</li>
+              </ul>
+              <p className="mt-2">Make sure the file does not contain duplicate course IDs.</p>
+              <p className="mt-2 text-xs">Click "Download Template" to get a ready-to-use Excel file.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <DetailPanel 
-        key={panel?._id} 
-        item={panel} 
-        type="course" 
-        onClose={() => setPanel(null)} 
-        onRefresh={fetchCourses} 
-      />
+      {/* تبويب عرض جميع الكورسات (بدون نماذج) */}
+      {tab === "allCourses" && (
+        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
+          {courses.map(c => {
+            const pct = c.capacity ? Math.round((c.enrolledStudents / c.capacity) * 100) : 0;
+            const color = DEPT_COLORS[c.department] || theme.accent;
+            const full = c.enrolledStudents >= c.capacity;
+            return (
+              <div key={c._id} onClick={() => setPanel(c)} className="card cursor-pointer" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = color + "55"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = theme.border; e.currentTarget.style.transform = "none"; }}>
+                <div className="flex justify-between items-start mb-3">
+                  <div><div className="font-bold" style={{ color: theme.white, fontSize: 14 }}>{c.title}</div><div className="text-sm" style={{ color }}>{c.instructor}</div></div>
+                  <span className="px-2 py-1 rounded-full text-xs font-semibold" style={{ background: `${color}20`, color }}>{c.credits} cr.</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="text-center p-3 rounded" style={{ background: theme.surface }}><div className="text-xs uppercase" style={{ color: theme.muted }}>Enrolled</div><div className="text-lg font-extrabold" style={{ color: theme.accent }}>{c.enrolledStudents}</div></div>
+                  <div className="text-center p-3 rounded" style={{ background: theme.surface }}><div className="text-xs uppercase" style={{ color: theme.muted }}>Capacity</div><div className="text-lg font-extrabold" style={{ color: full ? theme.red : theme.green }}>{c.enrolledStudents}/{c.capacity}</div></div>
+                </div>
+                <div className="progress-bar" style={{ background: theme.border }}><div className="progress-fill" style={{ width: `${Math.min(pct, 100)}%`, background: pct >= 100 ? theme.red : pct >= 80 ? theme.yellow : color }} /></div>
+                {full && <div className="mt-2 text-center text-xs font-bold py-1 rounded" style={{ background: `${theme.red}15`, color: theme.red }}>⚠ FULL</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <DetailPanel key={panel?._id} item={panel} type="course" onClose={() => setPanel(null)} onRefresh={fetchCourses} />
     </div>
   );
 }

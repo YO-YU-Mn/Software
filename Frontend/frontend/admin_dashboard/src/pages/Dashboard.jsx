@@ -141,7 +141,7 @@ export function Dashboard({ setPage }) {
 
   // آخر 5 طلاب مسجلين (بناءً على createdAt)
   const recentStudents = [...students].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 7);
-
+{ /* */}
   // نشاط وهمي مؤقتاً (يمكن تحسينه لاحقاً)
   const recentActivity = [
     { icon: "📋", color: theme.accent, text: "تم تحديث الإعدادات", time: "منذ قليل" },
@@ -169,7 +169,7 @@ export function Dashboard({ setPage }) {
             <div className="hero-date" style={{ color: theme.muted }}>{dateStr}</div>
           </div>
           <div style={{ display:"flex", gap:10 }}>
-            <button onClick={()=>setPage("addStudent")} className="hero-btn" style={{ background: G }}>+ Register Student</button>
+            {/* <button onClick={()=>setPage("addStudent")} className="hero-btn" style={{ background: G }}>+ Register Student</button>*/}
             <button onClick={toggleTheme} className="hero-btn" style={{ background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }}>
               {isDark ? "🌙" : "☀️"}
             </button>

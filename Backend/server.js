@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require('dotenv').config(); 
 
 //schemas
 const Student = require("./models/student");
@@ -20,6 +21,9 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const statsRoutes = require('./routes/statsRoutes');
 const bulkImportRoutes = require('./routes/BulkImport');
+const bulkCourseRoutes = require('./routes/bulkCourseRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
+const advisorRoutes = require('./routes/advisorRoutes');
 
 
 const app = express(); 
@@ -39,6 +43,10 @@ app.use('/news', newsRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/stats', statsRoutes);
 app.use('/bulkImport', bulkImportRoutes);
+app.use('/bulkCourses', bulkCourseRoutes);
+app.use('/chatbot', chatbotRoutes);
+app.use('/advisor', advisorRoutes);
+
 
 
 //login Authontication

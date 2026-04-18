@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './ScheduleRegistration.css';
 
 const API = 'http://localhost:9000';
+const GROQ_API_KEY = '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'; // ← حط الكي الجديد هنا بعد ما تعمل rotate
+const GROQ_API    = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL  = 'llama-3.3-70b-versatile';
 
 const ScheduleRegistration = () => {
   // ─── State ───────────────────────────────────────────────
-  const [student, setStudent]             = useState(null);
+  const [student, setStudent]                   = useState(null);
   const [availableCourses, setAvailableCourses] = useState([]);
   const [currentCourses, setCurrentCourses]     = useState([]);
   const [selectedCourses, setSelectedCourses]   = useState(new Set());
@@ -20,7 +23,7 @@ const ScheduleRegistration = () => {
   const [registerResult, setRegisterResult]     = useState(null);
   const [error, setError]                       = useState(null);
 
-  const token = localStorage.getItem('token');
+  const token   = localStorage.getItem('token');
   const headers = {
     'Content-Type': 'application/json',
     Authorization: token,
@@ -41,12 +44,12 @@ const ScheduleRegistration = () => {
         fetch(`${API}/courses/current`,           { headers }),
       ]);
 
-      const profileData  = await profileRes.json();
-      const availData    = await availRes.json();
-      const currentData  = await currentRes.json();
+      const profileData = await profileRes.json();
+      const availData   = await availRes.json();
+      const currentData = await currentRes.json();
 
       setStudent(profileData);
-      setAvailableCourses(Array.isArray(availData) ? availData : []);
+      setAvailableCourses(Array.isArray(availData)   ? availData   : []);
       setCurrentCourses(Array.isArray(currentData) ? currentData : []);
     } catch (err) {
       setError('تعذّر الاتصال بالسيرفر. تأكد من تشغيل الباك إند.');
@@ -68,11 +71,8 @@ const ScheduleRegistration = () => {
     return total;
   };
 
-  // لو المادة معندهاش schedule array مرتبة، نعمل slots منها
   const getCourseSlots = (course) => {
     if (!course.schedule || course.schedule.length === 0) return [];
-    // الباك بيرجع schedule: [{day, time}]
-    // بنجمع التايمز لنفس اليوم
     const map = {};
     course.schedule.forEach(s => {
       if (!map[s.day]) map[s.day] = [];
@@ -86,11 +86,9 @@ const ScheduleRegistration = () => {
       .map(s => `${s.day}: ${s.times.join(' أو ')}`)
       .join(' | ');
 
-  // فلترة المواد
   const getFiltered = () => {
     return availableCourses.filter(c => {
       if (currentFilter === 'all') return true;
-      // نوع المادة مش موجود صريح في الرسبونس، نعتمد على dept
       if (['CS', 'MATH', 'ENG'].includes(currentFilter))
         return (c.id || '').startsWith(currentFilter);
       return true;
@@ -99,7 +97,7 @@ const ScheduleRegistration = () => {
 
   const toggleCourse = (id) => {
     const c = availableCourses.find(x => x.id === id);
-    if (!c || !c.canRegister) return; // مش ممكن تسجيل
+    if (!c || !c.canRegister) return;
     const next = new Set(selectedCourses);
     next.has(id) ? next.delete(id) : next.add(id);
     setSelectedCourses(next);
@@ -121,7 +119,7 @@ const ScheduleRegistration = () => {
       setRegisterResult(data);
       if (data.registered?.length > 0) {
         setSelectedCourses(new Set());
-        await fetchAll(); // نحدّث البيانات
+        await fetchAll();
       }
     } catch (err) {
       setRegisterResult({ success: false, message: err.message });
@@ -130,7 +128,7 @@ const ScheduleRegistration = () => {
     }
   };
 
-  // ─── AI Schedule generation ───────────────────────────────
+  // ─── AI Schedule generation (Groq) ───────────────────────
   const startGenerate = () => {
     if (selectedCourses.size === 0) return;
     setShowPrefStep(true);
@@ -143,15 +141,19 @@ const ScheduleRegistration = () => {
     setLoading(true);
     setShowPrefStep(false);
 
-    const list = [...selectedCourses].map(id =>
-      availableCourses.find(c => c.id === id)
-    ).filter(Boolean);
+    const list = [...selectedCourses]
+      .map(id => availableCourses.find(c => c.id === id))
+      .filter(Boolean);
 
-    const coursesDescription = list.map(c =>
-      `- ${c.name} (${c.id}) | ${c.hours} ساعات | المواعيد: ${getSlotsDesc(c)}`
-    ).join('\n');
+    const coursesDescription = list
+      .map(c => `- ${c.name} (${c.id}) | ${c.hours} ساعات | المواعيد: ${getSlotsDesc(c)}`)
+      .join('\n');
 
-    const prompt = `أنت مساعد جامعي. الطالب "${student?.name || 'الطالب'}" يريد جدولاً دراسياً ${chosenPref}ياً (يفضل أوقات ${chosenPref === 'صباحي' ? '8 ص — 12 م' : chosenPref === 'متوسط' ? '10 ص — 3 م' : '2 م — 8 م'}).
+    const timeRange =
+      chosenPref === 'صباحي' ? '8 ص — 12 م' :
+      chosenPref === 'متوسط' ? '10 ص — 3 م' : '2 م — 8 م';
+
+    const userPrompt = `الطالب "${student?.name || 'الطالب'}" يريد جدولاً دراسياً ${chosenPref}ياً (يفضل أوقات ${timeRange}).
 
 المقررات المختارة:
 ${coursesDescription}
@@ -161,17 +163,37 @@ ${coursesDescription}
 {"schedule":[{"code":"...","name":"...","hours":3,"day":"...","time":"..."}],"notes":"ملاحظة مختصرة"}`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch(GROQ_API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+        },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: GROQ_MODEL,
           max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.3,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'أنت مساعد جامعي متخصص في تنظيم الجداول الدراسية. أجب دائماً بـ JSON فقط بدون أي نص إضافي أو markdown.',
+            },
+            {
+              role: 'user',
+              content: userPrompt,
+            },
+          ],
         }),
       });
+
       const data = await res.json();
-      const text = data.content?.map(b => b.text || '').join('') || '';
+
+      if (!res.ok) {
+        throw new Error(data.error?.message || `Groq error ${res.status}`);
+      }
+
+      const text  = data.choices?.[0]?.message?.content || '';
       const clean = text.replace(/```json|```/g, '').trim();
       setScheduleResult(JSON.parse(clean));
     } catch (err) {
@@ -206,8 +228,8 @@ ${coursesDescription}
   }
 
   // ─── Render ───────────────────────────────────────────────
-  const filtered = getFiltered();
-  const maxHours = 18;
+  const filtered  = getFiltered();
+  const maxHours  = 18;
   const usedHours = getRegisteredHours() + getSelectedHours();
 
   return (
@@ -219,7 +241,7 @@ ${coursesDescription}
         <p>اختر المقررات، شوف المواعيد المتاحة، ثم اضغط Generate لإنشاء جدولك بالذكاء الاصطناعي</p>
       </div>
 
-      {/* Student Info — بيانات حقيقية من الباك */}
+      {/* Student Info */}
       <div className="student-info">
         <div className="info-card">
           <div className="info-label">اسم الطالب</div>
@@ -235,7 +257,8 @@ ${coursesDescription}
         </div>
         <div className="info-card">
           <div className="info-label">الساعات المسجلة / المسموح</div>
-          <div className="info-value"
+          <div
+            className="info-value"
             style={{ color: usedHours >= maxHours ? '#dc2626' : undefined }}>
             {getRegisteredHours()} / {maxHours} ساعة
           </div>
@@ -285,7 +308,7 @@ ${coursesDescription}
       ) : (
         <div className="courses-grid">
           {filtered.map(course => {
-            const isSelected  = selectedCourses.has(course.id);
+            const isSelected   = selectedCourses.has(course.id);
             const isRegistered = course.isRegistered;
             const canRegister  = course.canRegister;
             const slots        = getCourseSlots(course);
@@ -294,8 +317,8 @@ ${coursesDescription}
               <div
                 key={course.id}
                 className={`course-card
-                  ${isSelected  ? 'selected'    : ''}
-                  ${isRegistered ? 'registered-card' : ''}
+                  ${isSelected    ? 'selected'       : ''}
+                  ${isRegistered  ? 'registered-card' : ''}
                   ${!canRegister && !isRegistered ? 'disabled-card' : ''}
                 `}>
                 <div className="card-top">
@@ -373,7 +396,6 @@ ${coursesDescription}
           </div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {/* زر تسجيل فعلي في الباك */}
           <button
             className="generate-btn"
             style={{ background: '#059669' }}
@@ -381,7 +403,6 @@ ${coursesDescription}
             disabled={selectedCourses.size === 0 || registerLoading}>
             {registerLoading ? '...' : '✓ تسجيل المواد'}
           </button>
-          {/* زر AI */}
           <button
             className="generate-btn"
             onClick={startGenerate}
@@ -396,7 +417,8 @@ ${coursesDescription}
 
       {/* نتيجة التسجيل */}
       {registerResult && (
-        <div className={`result-notes ${registerResult.registered?.length > 0 ? '' : 'error-msg'}`}
+        <div
+          className={`result-notes ${registerResult.registered?.length > 0 ? '' : 'error-msg'}`}
           style={{ margin: '1rem 0' }}>
           {registerResult.registered?.length > 0 && (
             <div>✓ تم تسجيل {registerResult.registered.length} مادة بنجاح: {registerResult.registered.join(', ')}</div>
@@ -452,7 +474,13 @@ ${coursesDescription}
               <div className="error-msg">
                 حصل خطأ: {scheduleResult.error}
                 <br />
-                <button className="retry-btn" onClick={() => { setShowPrefStep(true); setScheduleResult(null); setChosenPref(null); }}>
+                <button
+                  className="retry-btn"
+                  onClick={() => {
+                    setShowPrefStep(true);
+                    setScheduleResult(null);
+                    setChosenPref(null);
+                  }}>
                   حاول تاني
                 </button>
               </div>
@@ -470,7 +498,13 @@ ${coursesDescription}
                 </div>
                 <table className="schedule-table">
                   <thead>
-                    <tr><th>الكود</th><th>اسم المقرر</th><th>الساعات</th><th>اليوم</th><th>الوقت</th></tr>
+                    <tr>
+                      <th>الكود</th>
+                      <th>اسم المقرر</th>
+                      <th>الساعات</th>
+                      <th>اليوم</th>
+                      <th>الوقت</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {scheduleResult.schedule?.map(c => (
@@ -487,7 +521,13 @@ ${coursesDescription}
                 {scheduleResult.notes && (
                   <div className="result-notes">ملاحظات: {scheduleResult.notes}</div>
                 )}
-                <button className="retry-btn" onClick={() => { setShowPrefStep(true); setScheduleResult(null); setChosenPref(null); }}>
+                <button
+                  className="retry-btn"
+                  onClick={() => {
+                    setShowPrefStep(true);
+                    setScheduleResult(null);
+                    setChosenPref(null);
+                  }}>
                   ↩ تغيير التفضيل
                 </button>
               </>
