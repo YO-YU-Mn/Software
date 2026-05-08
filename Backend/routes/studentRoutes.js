@@ -98,4 +98,29 @@ router.get('/student/:code', async (req, res) => {
     res.json(student);
 });
 
+
+// حذف مجموعة طلاب (دفعة واحدة)
+router.delete('/bulk-delete', auth, async (req, res) => {
+  try {
+    // التحقق من أن المستخدم أدمن (اختياري)
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { codes } = req.body; // مصفوفة من الأكواد
+    if (!codes || !Array.isArray(codes) || codes.length === 0) {
+      return res.status(400).json({ success: false, message: 'No codes provided' });
+    }
+
+    const result = await Student.deleteMany({ code: { $in: codes } });
+    res.json({
+      success: true,
+      deletedCount: result.deletedCount,
+      message: `تم حذف ${result.deletedCount} طالب بنجاح`
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

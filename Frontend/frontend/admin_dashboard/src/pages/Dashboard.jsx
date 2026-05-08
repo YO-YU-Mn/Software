@@ -104,8 +104,8 @@ export function Dashboard({ setPage }) {
           return;
         }
         const [studentsRes, coursesRes] = await Promise.all([
-          axios.get('http://localhost:9000/students/all', { headers: { Authorization: token } }),
-          axios.get('http://localhost:9000/courses/allcourses', { headers: { Authorization: token } })
+          axios.get(`${import.meta.env.VITE_API_URL}/students/all`, { headers: { Authorization: token } }),
+          axios.get(`${import.meta.env.VITE_API_URL}/courses/allcourses`, { headers: { Authorization: token } })
         ]);
         setStudents(studentsRes.data);
         setCourses(coursesRes.data);
@@ -141,7 +141,7 @@ export function Dashboard({ setPage }) {
 
   // آخر 5 طلاب مسجلين (بناءً على createdAt)
   const recentStudents = [...students].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 7);
-
+{ /* */}
   // نشاط وهمي مؤقتاً (يمكن تحسينه لاحقاً)
   const recentActivity = [
     { icon: "📋", color: theme.accent, text: "تم تحديث الإعدادات", time: "منذ قليل" },
@@ -169,7 +169,7 @@ export function Dashboard({ setPage }) {
             <div className="hero-date" style={{ color: theme.muted }}>{dateStr}</div>
           </div>
           <div style={{ display:"flex", gap:10 }}>
-            <button onClick={()=>setPage("addStudent")} className="hero-btn" style={{ background: G }}>+ Register Student</button>
+            {/* <button onClick={()=>setPage("addStudent")} className="hero-btn" style={{ background: G }}>+ Register Student</button>*/}
             <button onClick={toggleTheme} className="hero-btn" style={{ background: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }}>
               {isDark ? "🌙" : "☀️"}
             </button>
@@ -183,8 +183,6 @@ export function Dashboard({ setPage }) {
         <NavCard icon="📚" label="Courses"          sub={`${totalCourses} sections`}              color={theme.green}  onClick={()=>setPage("courses")}    />
         <NavCard icon="📊" label="Reports"          sub="Academic stats"                          color={theme.purple} onClick={()=>setPage("reports")}    />
         <NavCard icon="➕" label="Register Student" sub="Enroll new student"                      color={theme.yellow} onClick={()=>setPage("addStudent")} />
-        <NavCard icon="📥" label="Course Import"    sub="Upload course Excel"                     color="#8b5cf6"      onClick={()=>setPage("bulkCourseImport")} />
-        <NavCard icon="📤" label="Student Import"   sub="Upload student Excel"                    color={theme.green} onClick={()=>setPage("bulkImport")} />
         <NavCard icon="🔐" label="Register Admin"   sub="Admin access"                            color={theme.red}    onClick={()=>setPage("addAdmin")}   />
         <NavCard icon="🔔" label="Notifications"    sub="Send alerts"                             color={theme.orange} onClick={()=>setPage("notifications")} />
         <NavCard icon="⚙️" label="Settings"         sub="Registration control"                    color={theme.blue}   onClick={()=>setPage("settings")} />

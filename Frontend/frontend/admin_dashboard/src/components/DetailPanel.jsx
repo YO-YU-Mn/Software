@@ -10,12 +10,15 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
 
+// قائمة التخصصات الثابتة (بدلاً من جلبها من API)
+  const dep = ["CS", "Physics", "Chem", "Math", "Bio"];
+
   // جلب التخصصات المتاحة
   useEffect(() => {
     const fetchSpecializations = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:9000/students/all', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/students/all`, {
           headers: { Authorization: token }
         });
         const uniqueSpecs = [...new Set(res.data.map(s => s.specialization).filter(Boolean))];
@@ -36,15 +39,25 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
     try {
       const token = localStorage.getItem('token');
       if (type === 'student') {
-        await axios.put(`http://localhost:9000/students/updatestudent/${item.code}`, editData, {
+        await axios.put(`${import.meta.env.VITE_API_URL}/students/updatestudent/${item.code}`, editData, {
           headers: { Authorization: token }
         });
         toast.success('تم تحديث بيانات الطالب');
       } else if (type === 'course') {
-        await axios.put(`http://localhost:9000/courses/updateCourse/${item._id}`, editData, {
+        await axios.put(`${import.meta.env.VITE_API_URL}/courses/updateCourse/${item._id}`, editData, {
           headers: { Authorization: token }
         });
         toast.success('تم تحديث بيانات المادة');
+      } else if (type === 'admin') {
+        const payload = {
+          name: editData.name,
+          email: editData.email,
+        };
+        if (editData.password) payload.password = editData.password;
+        await axios.put(`${import.meta.env.VITE_API_URL}/admins/updateAdmin/${item.code}`, payload, {
+          headers: { Authorization: token }
+        });
+        toast.success('تم تحديث بيانات المدير');
       }
       setIsEditing(false);
       onClose();
@@ -60,7 +73,7 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
   const handleDelete = () => {
     toast((t) => (
       <div style={{ direction: 'rtl', textAlign: 'center' }}>
-        <p>هل أنت متأكد من حذف {type === 'student' ? 'الطالب' : 'المادة'} "{item.name || item.title}"؟</p>
+        <p>هل أنت متأكد من حذف {type === 'student' ? 'الطالب' : type === 'course' ? 'المادة' : 'المدير'} "{item.name || item.title}"؟</p>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
           <button
             onClick={() => {
@@ -101,15 +114,20 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
     try {
       const token = localStorage.getItem('token');
       if (type === 'student') {
-        await axios.delete(`http://localhost:9000/students/delete/${item.code}`, {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/students/delete/${item.code}`, {
           headers: { Authorization: token }
         });
         toast.success('تم حذف الطالب');
       } else if (type === 'course') {
-        await axios.delete(`http://localhost:9000/courses/deleteCourse/${item._id}`, {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/courses/deleteCourse/${item._id}`, {
           headers: { Authorization: token }
         });
         toast.success('تم حذف المادة');
+      } else if (type === 'admin') {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/admins/delAdmin/${item.code}`, {
+          headers: { Authorization: token }
+        });
+        toast.success('تم حذف المدير');
       }
       onClose();
       if (onRefresh) onRefresh();
@@ -139,21 +157,28 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
         { label: 'Department', key: 'specialization', type: 'select', options: specializations },
         { label: 'level', key: 'level', type: 'number' },
         { label: 'semester', key: 'semester', type: 'number' },
-        { label: 'email ', key: 'email', type: 'email' },
+        { label: 'email', key: 'email', type: 'email' },
         { label: 'phone', key: 'phone', type: 'text' },
         { label: 'GPA', key: 'GPA', type: 'number', step: 0.1 },
       ]
-    : [
-        { label: 'Course ID', key: 'course_id', type: 'text', readonly: true },
-        { label: 'Title', key: 'title', type: 'text' },
-        { label: 'Department', key: 'department', type: 'text' },
-        { label: 'Level', key: 'level', type: 'number' },
-        { label: 'Semester', key: 'semester', type: 'number' },
-        { label: 'Credits', key: 'credits', type: 'number' },
-        { label: 'Instructor', key: 'instructor', type: 'text' },
-        { label: 'Capacity', key: 'capacity', type: 'number' },
-        { label: 'Enrolled', key: 'enrolledStudents', type: 'number', readonly: true },
-      ];
+    : type === 'course'
+      ? [
+          { label: 'Course ID', key: 'course_id', type: 'text', readonly: true },
+          { label: 'Title', key: 'title', type: 'text' },
+          { label: 'Department', key: 'specialization', type: 'select', options: dep },
+          { label: 'Level', key: 'level', type: 'number' },
+          { label: 'Semester', key: 'semester', type: 'number' },
+          { label: 'Credits', key: 'credits', type: 'number' },
+          { label: 'Instructor', key: 'instructor', type: 'text' },
+          { label: 'Capacity', key: 'capacity', type: 'number' },
+          { label: 'Enrolled', key: 'enrolledStudents', type: 'number', readonly: true },
+        ]
+      : [
+          { label: 'Admin Code', key: 'code', type: 'text', readonly: true },
+          { label: 'Full Name', key: 'name', type: 'text' },
+          { label: 'Email', key: 'email', type: 'email' },
+          { label: 'New Password', key: 'password', type: 'password', hideInView: true },
+        ];
 
   return (
     <div className="panel-overlay" onClick={onClose}>
@@ -162,8 +187,10 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
         <div className="panel-content">
           <div className="flex justify-between items-start mb-5">
             <div>
-              <div className="panel-title" style={{ color: theme.muted }}>{type === 'student' ? 'Student Profile' : 'Course Details'}</div>
-              <h2 className="panel-name" style={{ color: theme.white }}>{item.name || item.title}</h2>
+              <div className="panel-title" style={{ color: theme.muted }}>
+                {type === 'student' ? 'Student Profile' : type === 'course' ? 'Course Details' : 'Admin Details'}
+              </div>
+              <h2 className="panel-name" style={{ color: theme.white }}>{item.name || item.title || `Admin #${item.code}`}</h2>
             </div>
             <button onClick={onClose} className="panel-close" style={{ background: theme.surface, borderColor: theme.border, color: theme.muted }}>✕</button>
           </div>
@@ -174,7 +201,11 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
                 <div key={field.key} className="panel-info-row" style={{ background: i % 2 === 0 ? theme.surface : theme.card }}>
                   <span className="panel-info-label" style={{ color: theme.muted }}>{field.label}</span>
                   <span className="panel-info-value" style={{ color: theme.text }}>
-                    {field.readonly ? item[field.key] : (item[field.key] ?? '—')}
+                    {field.readonly
+                      ? item[field.key]
+                      : field.hideInView
+                        ? '•••••••'
+                        : (item[field.key] ?? '—')}
                   </span>
                 </div>
               ))}

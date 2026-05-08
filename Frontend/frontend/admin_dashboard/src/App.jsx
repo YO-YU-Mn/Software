@@ -11,8 +11,6 @@ import { AdminFormPage } from "./pages/AdminFormPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { NewsPage } from "./pages/NewsPage";
-import { BulkImportPage } from "./pages/BulkImportPage";
-import { BulkCourseImportPage } from "./pages/BulkCourseImportPage";
 import "./style.css";
 
 export default function App() {
@@ -55,8 +53,6 @@ export default function App() {
           {page === "notifications" && <NotificationsPage onBack={()=>setPage("dashboard")} />}
           {page === "settings" && <SettingsPage onBack={()=>setPage("dashboard")} />}
           {page === "news" && <NewsPage onBack={()=>setPage("dashboard")} />}
-          {page === "bulkImport" && <BulkImportPage setPage={setPage} />}
-          {page === "bulkCourseImport" && <BulkCourseImportPage setPage={setPage} />}
         </div>
       </BrowserRouter>
     </ThemeProvider>

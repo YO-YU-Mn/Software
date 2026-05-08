@@ -13,7 +13,7 @@ function StudentDashboard() {
   useEffect(() => {
     const fetchNotifications = async () => {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:9000/notifications/get', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications/get`, {
         headers: { Authorization: token }
       });
       const data = await response.json();
@@ -22,7 +22,7 @@ function StudentDashboard() {
     const fetchRegistrationStatus = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:9000/settings/status', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/settings/status`, {
           headers: { Authorization: token }
         });
         const data = await res.json();

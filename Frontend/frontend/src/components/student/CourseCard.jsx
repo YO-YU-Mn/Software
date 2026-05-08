@@ -86,19 +86,15 @@ function CourseCard({ course, isSelected, onSelect, totalHours }) {
       <div className="course-actions">
         {isSelected ? (
           <button className="btn-remove" onClick={() => onSelect(course)}>
-            <span>❌</span> Remove  
+            <span>Delete</span> 
           </button>
         ) : (
           <button
             className="btn-select"
-            onClick={() => {
-              console.log("Selecting course:", course);
-              onSelect(course);
-            }}
+            onClick={() => onSelect(course)}
             disabled={!canSelect || totalHours + (course?.hours || 0) > 18}
-            title={!canSelect ? "Cannot register this course" : "Click to select this course"}
           >
-            <span>✅</span> Select Subject
+            <span>Select</span> 
           </button>
         )}
       </div>

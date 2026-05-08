@@ -8,10 +8,13 @@ function StudentInfoCard({ student }) {
         <p><strong> code:</strong> {student.code}</p>
         <p><strong> level:</strong> {student.level}</p>
         <p><strong>Department:</strong> {student.specialization}</p>
-        <p><strong> graduation year:</strong> {student.gradute_year}</p>
+       
         <p><strong>GPA:</strong> {student.GPA}</p>
-        <p><strong>uni:</strong> {student.university}</p>
+        
         <p><strong>semester</strong>{student.semester}</p>
+        <p><strong>current Courses</strong>{student.currentCourses}</p>
+        <p><strong>completed Courses</strong>{student.completedCourses}</p>
+
       </div>
     </div>
   );

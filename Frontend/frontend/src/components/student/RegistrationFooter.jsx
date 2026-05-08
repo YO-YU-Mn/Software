@@ -11,14 +11,10 @@ function RegistrationFooter({ selectedCourses, totalHours, loading, onSubmit, di
         </div>
       </div>
 
-      <button
+       <button
         className="btn-submit"
-        onClick={() => {
-          console.log("Submit button clicked with", selectedCourses.length, "courses");
-          onSubmit();
-        }}
+        onClick={onSubmit}
         disabled={loading || selectedCourses.length === 0 || disabled}
-        title={selectedCourses.length === 0 ? "Select at least one course" : disabled ? "Registration is closed" : "Click to confirm registration"}
       >
         {loading ? (
           <>
@@ -27,7 +23,7 @@ function RegistrationFooter({ selectedCourses, totalHours, loading, onSubmit, di
           </>
         ) : (
           <>
-            <span>✅</span>
+            <span></span>
              Confirm Register
           </>
         )}

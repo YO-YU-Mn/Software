@@ -39,93 +39,37 @@ function RegistrationPage() {
 
     if (selectedCourses.find((c) => c?.id === course.id)) {
       setSelectedCourses(selectedCourses.filter((c) => c?.id !== course.id));
-      Alert.alert("✅ تم الحذف", "تم إزالة المادة من التسجيل", [{text: "حسناً", onPress: () => {}}]);
       return;
     }
 
     if (totalHours + (course.hours || 0) > 18) {
-      Alert.alert(
-        "⚠️ تنبيه - تجاوز الحد الأقصى",
-        `الساعات الحالية: ${totalHours}\nالساعات المطلوبة: ${course.hours}\nستكون الإجمالي: ${totalHours + (course.hours || 0)}/18 ❌`,
-        [{text: "حسناً", onPress: () => {}}]
-      );
+      Alert.alert("تنبيه", "لا يمكن اختيار أكثر من 18 ساعة");
       return;
     }
 
     if (hasConflict(course)) {
-      const conflictingCourses = selectedCourses
-        .filter(selected => {
-          if (!course.schedule || !selected.schedule) return false;
-          for (let s1 of selected.schedule) {
-            for (let s2 of course.schedule) {
-              if (s1?.day === s2?.day && s1?.time === s2?.time) return true;
-            }
-          }
-          return false;
-        })
-        .map(c => c.name)
-        .join("، ");
-      
-      Alert.alert(
-        "⚠️ تنبيه - تعارض في المواعيد", 
-        `هذه المادة تتعارض مع:\n${conflictingCourses}`, 
-        [{text: "حسناً", onPress: () => {}}]
-      );
+      Alert.alert("تنبيه", "يوجد تعارض في المواعيد!");
       return;
     }
 
     setSelectedCourses([...selectedCourses, course]);
-    Alert.alert(
-      "✅ تم الإضافة", 
-      `تم إضافة "${course.name}" (${course.hours} ساعات)\nإجمالي الساعات: ${totalHours + course.hours}/18`,
-      [{text: "حسناً", onPress: () => {}}]
-    );
   }
 
   async function handleSubmit() {
     if (selectedCourses.length === 0) {
-      Alert.alert("⚠️ لم تختر أي مواد", "يجب اختيار مادة واحدة على الأقل قبل التأكيد");
+      Alert.alert("تنبيه", "اختر مواد أولاً");
       return;
     }
 
     setLoading(true);
     try {
-      // Save to AsyncStorage
       await AsyncStorage.setItem(
         "studentSchedule",
         JSON.stringify(selectedCourses)
       );
-      
-      // Also save selection count and timestamp
-      await AsyncStorage.setItem(
-        "registrationStatus",
-        JSON.stringify({
-          coursesCount: selectedCourses.length,
-          totalHours: totalHours,
-          registeredAt: new Date().toISOString(),
-          status: "completed"
-        })
-      );
-      
-      // Show detailed success message with list of courses
-      const courseNames = selectedCourses.map(c => `${c.name} (${c.hours} ساعات)`).join("\n• ");
-      Alert.alert(
-        "✅ تم التسجيل بنجاح!",
-        `تم تسجيل ${selectedCourses.length} مادة\n\nالمواد المسجلة:\n• ${courseNames}\n\n📊 إجمالي الساعات: ${totalHours}/18`,
-        [{text: "موافق", onPress: () => {
-          setTimeout(() => {
-            navigation.navigate("Schedule");
-          }, 500);
-        }}]
-      );
-      
+      navigation.navigate("Schedule");
     } catch (e) {
-      console.error("Registration error:", e);
-      Alert.alert(
-        "❌ خطأ في التسجيل", 
-        "فشل في حفظ البيانات: " + (e.message || "خطأ غير معروف"),
-        [{text: "حسناً", onPress: () => {}}]
-      );
+      Alert.alert("خطأ", "فشل في حفظ البيانات");
     } finally {
       setLoading(false);
     }

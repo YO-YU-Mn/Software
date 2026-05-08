@@ -46,7 +46,7 @@ export function BulkCourseImportPage({ setPage }) {
         return;
       }
 
-      const response = await axios.post('http://localhost:9000/courses/import', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/courses/import`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: token

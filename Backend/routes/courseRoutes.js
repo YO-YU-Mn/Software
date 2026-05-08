@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Course = require('../models/courses');
 const Student = require('../models/student');
-const multer = require('multer');
-const xlsx = require('xlsx');
-const fs = require('fs');
+
 
 const auth = require('../middleware/auth');
 
@@ -33,8 +31,6 @@ router.get("/course/:course_id", async (req, res) => {
 });
 
 
-const upload = multer({ dest: 'uploads/' });
-
 router.post('/addCourse', async (req, res) => {
     try {
         const existing = await Course.findOne({ course_id: req.body.course_id });
@@ -53,141 +49,6 @@ router.post('/addCourse', async (req, res) => {
     } catch(err) {
         res.status(500).json({ error: err.message });
     }
-});
-
-function parseArrayField(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (!trimmed) return [];
-    try {
-      return JSON.parse(trimmed);
-    } catch {
-      return trimmed.split(',').map(item => item.trim()).filter(Boolean);
-    }
-  }
-  return [];
-}
-
-function parseScheduleField(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  const trimmed = value.toString().trim();
-  if (!trimmed) return [];
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (Array.isArray(parsed)) return parsed;
-  } catch {
-    const items = trimmed.split(';').map(item => item.trim()).filter(Boolean);
-    return items.map(item => {
-      const parts = item.split('|').map(p => p.trim());
-      return {
-        day: parts[0] || '',
-        time: parts[1] || '',
-        location: parts[2] || ''
-      };
-    }).filter(entry => entry.day && entry.time);
-  }
-  return [];
-}
-
-router.post('/import', auth, upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'لم يتم رفع أي ملف' });
-    }
-
-    const workbook = xlsx.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const rows = xlsx.utils.sheet_to_json(sheet, { defval: '' });
-
-    if (!rows || rows.length === 0) {
-      fs.unlinkSync(req.file.path);
-      return res.status(400).json({ success: false, error: 'الملف فارغ أو لا يحتوي على بيانات صالحة' });
-    }
-
-    const requiredColumns = ['course_id', 'title', 'credits', 'instructor', 'department', 'level', 'semester', 'capacity'];
-    const firstRow = rows[0];
-    const missingColumns = requiredColumns.filter(col => !firstRow.hasOwnProperty(col));
-    if (missingColumns.length > 0) {
-      fs.unlinkSync(req.file.path);
-      return res.status(400).json({ success: false, error: `الملف لا يحتوي على الأعمدة المطلوبة: ${missingColumns.join(', ')}` });
-    }
-
-    const results = { total: rows.length, successCount: 0, errors: [] };
-    const validCourses = [];
-    const courseIds = [];
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const rowNumber = i + 2;
-      const errors = [];
-
-      if (!row.course_id.toString().trim()) errors.push('course_id مطلوب');
-      if (!row.title.toString().trim()) errors.push('title مطلوب');
-      if (!row.instructor.toString().trim()) errors.push('instructor مطلوب');
-      if (!row.department.toString().trim()) errors.push('department مطلوب');
-      const credits = Number(row.credits);
-      if (isNaN(credits) || credits <= 0) errors.push('credits يجب أن يكون رقماً أكبر من صفر');
-      const level = Number(row.level);
-      if (isNaN(level) || level < 1 || level > 4) errors.push('level يجب أن يكون رقماً بين 1 و 4');
-      const semester = Number(row.semester);
-      if (isNaN(semester) || semester < 1 || semester > 2) errors.push('semester يجب أن يكون 1 أو 2');
-      const capacity = row.capacity === '' ? 30 : Number(row.capacity);
-      if (isNaN(capacity) || capacity < 1) errors.push('capacity يجب أن يكون رقماً أكبر من صفر');
-
-      if (errors.length > 0) {
-        results.errors.push({ row: rowNumber, errors });
-        continue;
-      }
-
-      validCourses.push({
-        course_id: row.course_id.toString().trim(),
-        title: row.title.toString().trim(),
-        credits,
-        instructor: row.instructor.toString().trim(),
-        department: row.department.toString().trim(),
-        level,
-        semester,
-        capacity,
-        enrolledStudents: 0,
-        prerequisites: parseArrayField(row.prerequisites),
-        schedule: parseScheduleField(row.schedule)
-      });
-      courseIds.push(row.course_id.toString().trim());
-    }
-
-    const existing = await Course.find({ course_id: { $in: courseIds } });
-    const existingSet = new Set(existing.map(c => c.course_id));
-    const finalCourses = [];
-
-    validCourses.forEach((course, index) => {
-      if (existingSet.has(course.course_id)) {
-        results.errors.push({ row: index + 2, errors: [`المادة ${course.course_id} موجودة مسبقاً`] });
-      } else {
-        finalCourses.push(course);
-      }
-    });
-
-    if (finalCourses.length > 0) {
-      try {
-        await Course.insertMany(finalCourses, { ordered: false });
-        results.successCount = finalCourses.length;
-      } catch (insertErr) {
-        console.error(insertErr);
-        results.errors.push({ row: 0, errors: ['خطأ أثناء إدراج المواد في قاعدة البيانات'] });
-      }
-    }
-
-    fs.unlinkSync(req.file.path);
-    return res.json({ success: true, total: results.total, successCount: results.successCount, errors: results.errors });
-  } catch (err) {
-    console.error(err);
-    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    return res.status(500).json({ success: false, error: 'حدث خطأ داخلي في الخادم' });
-  }
 });
 
 // عدّل مادة (الأدمن)

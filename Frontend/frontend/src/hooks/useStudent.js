@@ -6,7 +6,7 @@ function useStudent() {
     useEffect(() => {
         async function getProfile() {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:9000/students/profile', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/students/profile`, {
                 headers: { authorization: token }
             });
             const data = await response.json();

@@ -21,7 +21,7 @@ export function NotificationsPage({ onBack }) {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/notifications/all', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/notifications/all`, {
         headers: { Authorization: token }
       });
       setNotifications(res.data);
@@ -50,12 +50,12 @@ export function NotificationsPage({ onBack }) {
       if (form.target !== 'specific') delete payload.studentCode;
 
       if (editingId) {
-        await axios.put(`http://localhost:9000/notifications/update/${editingId}`, payload, {
+        await axios.put(`${import.meta.env.VITE_API_URL}/notifications/update/${editingId}`, payload, {
           headers: { Authorization: token }
         });
         toast.success('تم تعديل الإشعار');
       } else {
-        await axios.post('http://localhost:9000/notifications/add', payload, {
+        await axios.post(`${import.meta.env.VITE_API_URL}/notifications/add`, payload, {
           headers: { Authorization: token }
         });
         toast.success('تم إرسال الإشعار');
@@ -123,7 +123,7 @@ export function NotificationsPage({ onBack }) {
 const performDelete = async (id) => {
   try {
     const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:9000/notifications/admin/${id}`, {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/notifications/admin/${id}`, {
       headers: { Authorization: token }
     });
     toast.success('تم حذف الإشعار');

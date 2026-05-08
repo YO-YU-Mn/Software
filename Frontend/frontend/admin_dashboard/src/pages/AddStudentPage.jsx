@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 import axios from "axios";
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 export function AddStudentPage({ onBack }) {
   const { theme } = useTheme();
   const G = `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})`;
 
   const [tab, setTab] = useState("register");
+  
   const [regForm, setRegForm] = useState({ code: "", password: "", name: "", email: "", specialization: "", level: "", semester: "", phone: "" });
   const [enrollForm, setEnrollForm] = useState({ studentCode: "", courseId: "" });
   const [foundStudent, setFoundStudent] = useState(null);
@@ -16,38 +18,20 @@ export function AddStudentPage({ onBack }) {
   const [recentStudents, setRecentStudents] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // حالات رفع الملف
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
 
-
-const [specializations, setSpecializations] = useState([]);
-
-// جلب التخصصات الفريدة من الطلاب
-useEffect(() => {
-  const fetchSpecializations = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/students/all', {
-        headers: { Authorization: token }
-      });
-      // استخراج التخصصات الفريدة (مع تجاهل القيم الفارغة)
-      const uniqueSpecs = [...new Set(res.data.map(s => s.specialization).filter(Boolean))];
-      setSpecializations(uniqueSpecs);
-    } catch (err) {
-      console.error('Failed to fetch specializations', err);
-      // إذا فشل، نستخدم قائمة افتراضية (اختياري)
-      setSpecializations(['CS', 'IT', 'IS', 'DS']);
-    }
-  };
-  fetchSpecializations();
-}, []);
-
-
+  // قائمة التخصصات الثابتة
+  const specializations = ["CS", "Physics", "Chem", "Math", "Bio"];
 
   // جلب جميع الكورسات (للتسجيل)
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:9000/courses/allcourses', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/courses/allcourses`, {
           headers: { Authorization: token }
         });
         setCourses(res.data);
@@ -62,10 +46,9 @@ useEffect(() => {
   const fetchRecentStudents = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/students/all', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/students/all`, {
         headers: { Authorization: token }
       });
-      // نأخذ آخر 10 طلاب بناءً على تاريخ الإنشاء
       const sorted = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
       setRecentStudents(sorted);
     } catch (err) {
@@ -86,7 +69,7 @@ useEffect(() => {
     }
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:9000/students/student/${code}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/students/student/${code}`, {
         headers: { Authorization: token }
       });
       if (res.data.success === false) {
@@ -95,7 +78,6 @@ useEffect(() => {
         toast.error('الطالب غير موجود');
       } else {
         setFoundStudent(res.data);
-        // جلب تفاصيل المواد المسجلة للطالب
         const enrolledDetails = courses.filter(c => res.data.currentCourses?.includes(c.course_id));
         setStudentCourses(enrolledDetails);
       }
@@ -116,15 +98,14 @@ useEffect(() => {
         ...regForm,
         level: Number(regForm.level),
         semester: Number(regForm.semester),
-        password: Number(regForm.password) // الباك إند يتوقع رقم
+        password: Number(regForm.password)
       };
-      const res = await axios.post('http://localhost:9000/students/addstudent', payload, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/students/addstudent`, payload, {
         headers: { Authorization: token }
       });
       if (res.data.success) {
         toast.success('تم إضافة الطالب بنجاح');
         setRegForm({ code: "", password: "", name: "", email: "", specialization: "", level: "", semester: "", phone: "" });
-        // تحديث قائمة الطلاب بعد الإضافة
         fetchRecentStudents();
       } else {
         toast.error(res.data.message || 'فشل الإضافة');
@@ -137,35 +118,87 @@ useEffect(() => {
   };
 
   const handleEnroll = async () => {
-  if (!enrollForm.studentCode || !enrollForm.courseId) {
-    toast.error('اختر الطالب والمادة');
-    return;
+    if (!enrollForm.studentCode || !enrollForm.courseId) {
+      toast.error('اختر الطالب والمادة');
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${import.meta.env.VITE_API_URL}/courses/admin/register/${enrollForm.studentCode}`, {
+        course_id: enrollForm.courseId
+      }, {
+        headers: { Authorization: token }
+      });
+      toast.success('تم تسجيل الطالب في المادة');
+
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/students/student/${enrollForm.studentCode}`, {
+        headers: { Authorization: token }
+      });
+      setFoundStudent(res.data);
+      const enrolledDetails = courses.filter(c => res.data.currentCourses?.includes(c.course_id));
+      setStudentCourses(enrolledDetails);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'حدث خطأ');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // دالة تحميل النموذج (Template)
+  const downloadTemplate = () => {
+    const headers = [
+      "code",
+      "password",
+      "name",
+      "email",
+      "phone",
+      "specialization",
+      "level",
+      "semester"
+    ];
+    const sampleRow = [];
+    const data = [headers, sampleRow];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "StudentsTemplate");
+    XLSX.writeFile(wb, "students_template.xlsx");
+    toast.success("تم تحميل النموذج بنجاح");
+  };
+
+  const handleFileUpload = async () => {
+    if (!file) {
+      toast.error('يرجى اختيار ملف أولاً');
+      return;
+    }
+    setUploading(true);
+    setUploadResult(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/bulkImport/upload`, formData, {
+        headers: { Authorization: token, 'Content-Type': 'multipart/form-data' }
+      });
+      setUploadResult(res.data);
+      toast.success(`تم إضافة ${res.data.successCount} طالب بنجاح`);
+      fetchRecentStudents();
+      setFile(null);
+      const fileInput = document.getElementById('excel-file-input');
+      if (fileInput) fileInput.value = '';
+    } catch (err) {
+  console.error('Full error:', err);
+  if (err.response) {
+    console.log('Response data:', err.response.data);
+    console.log('Response status:', err.response.status);
+    toast.error(`فشل رفع الملف: ${err.response.data.error || err.message}`);
+  } else {
+    toast.error('فشل رفع الملف');
   }
-  setLoading(true);
-  try {
-    const token = localStorage.getItem('token');
-    await axios.post(`http://localhost:9000/courses/admin/register/${enrollForm.studentCode}`, {
-      course_id: enrollForm.courseId
-    }, {
-      headers: { Authorization: token }
-    });
-    toast.success('تم تسجيل الطالب في المادة');
-
-    // تحديث معلومات الطالب والمواد المسجلة
-    const res = await axios.get(`http://localhost:9000/students/student/${enrollForm.studentCode}`, {
-      headers: { Authorization: token }
-    });
-    setFoundStudent(res.data);
-    const enrolledDetails = courses.filter(c => res.data.currentCourses?.includes(c.course_id));
-    setStudentCourses(enrolledDetails);
-  } catch (err) {
-    toast.error(err.response?.data?.error || 'حدث خطأ');
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+} finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
@@ -173,14 +206,33 @@ useEffect(() => {
       <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>Student Registration</h1>
 
       <div className="flex gap-0 mb-6" style={{ background: theme.card, borderRadius: 10, border: `1px solid ${theme.border}`, width: "fit-content" }}>
-        {[["register","⊕ New Student"],["enroll","▣ Manage Enrollments"]].map(([id,label]) => (
-          <button key={id} onClick={()=>setTab(id)} className="btn" style={{ padding: "10px 26px", borderRadius: 9, background: tab===id ? G : "transparent", color: tab===id ? "#fff" : theme.muted }}>{label}</button>
+        {[
+          ["register", " New Student"],
+          ["enroll", " Manage Enrollments"],
+          ["addfile", " Add File"]
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => {
+              setTab(id);
+              setUploadResult(null);
+              setFile(null);
+            }}
+            className="btn"
+            style={{
+              padding: "10px 26px",
+              borderRadius: 9,
+              background: tab === id ? G : "transparent",
+              color: tab === id ? "#fff" : theme.muted
+            }}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
       {tab === "register" && (
         <div className="grid grid-cols-2 gap-6">
-          {/* نموذج الإضافة */}
           <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
             <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Student Information</div>
             <div className="flex flex-col gap-3">
@@ -191,17 +243,16 @@ useEffect(() => {
               <input placeholder="Phone" value={regForm.phone} onChange={e => setRegForm({...regForm, phone: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }} />
               <div className="grid grid-cols-2 gap-2">
                 <select value={regForm.specialization} onChange={e => setRegForm({...regForm, specialization: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}>
-  <option value="">Specialization *</option>
-  {specializations.map(spec => <option key={spec} value={spec}>{spec}</option>)}
-</select>
+                  <option value="">Specialization *</option>
+                  {specializations.map(spec => <option key={spec} value={spec}>{spec}</option>)}
+                </select>
                 <input type="number" placeholder="Level *" value={regForm.level} onChange={e => setRegForm({...regForm, level: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }} />
               </div>
               <input type="number" placeholder="Semester *" value={regForm.semester} onChange={e => setRegForm({...regForm, semester: e.target.value})} className="input-field" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }} />
-              <button onClick={handleRegister} disabled={loading} className="btn btn-primary mt-1" style={{ background: G, padding: 13 }}>⊕ Register Student</button>
+              <button onClick={handleRegister} disabled={loading} className="btn btn-primary mt-1" style={{ background: G, padding: 13 }}> Register Student</button>
             </div>
           </div>
 
-          {/* قائمة آخر الطلاب المضافين */}
           <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
             <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Recently Registered</div>
             {recentStudents.length === 0 ? (
@@ -274,6 +325,81 @@ useEffect(() => {
                 </div>
               ))
             )}
+          </div>
+        </div>
+      )}
+
+
+      {/* تبويب Add File - رفع ملف إكسل */}
+      {tab === "addfile" && (
+        <div className="grid grid-cols-2 gap-6">
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>Upload Excel File</div>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="input-label" style={{ color: theme.muted }}>Choose Excel file (.xlsx, .xls, .csv)</label>
+                <input
+                  id="excel-file-input"
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={e => setFile(e.target.files[0])}
+                  className="input-field"
+                  style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text, padding: '8px' }}
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleFileUpload}
+                  disabled={!file || uploading}
+                  className="btn btn-primary flex-1"
+                  style={{ background: G, padding: '12px' }}
+                >
+                  {uploading ? 'Uploading...' : 'Upload File'}
+                </button>
+                <button
+                  onClick={downloadTemplate}
+                  className="btn"
+                  style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.accent, padding: '12px' }}
+                >
+                   Download Template
+                </button>
+              </div>
+              {uploadResult && (
+                <div className="mt-4">
+                  <p style={{ color: theme.green }}>✅ Successfully added: {uploadResult.successCount} students</p>
+                  {uploadResult.errors && uploadResult.errors.length > 0 && (
+                    <div style={{ color: theme.red, marginTop: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                      <strong>Errors:</strong>
+                      <ul>
+                        {uploadResult.errors.map((err, idx) => (
+                          <li key={idx}>
+                            {typeof err === 'object' ? `Row ${err.row}: ${err.errors.join(', ')}` : err}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="card" style={{ background: theme.card, border: `1px solid ${theme.border}` }}>
+            <div className="font-bold mb-4" style={{ color: theme.white, fontSize: 15 }}>File Format Instructions</div>
+            <div style={{ color: theme.muted, fontSize: '13px', lineHeight: 1.6 }}>
+              <p>The Excel file should contain the following columns (first row as headers):</p>
+              <ul style={{ paddingLeft: '1.5rem', marginTop: '0.5rem' }}>
+                <li><strong>code</strong> (required, unique number)</li>
+                <li><strong>password</strong> (required, number or string)</li>
+                <li><strong>name</strong> (required, full name)</li>
+                <li><strong>email</strong> (optional)</li>
+                <li><strong>phone</strong> (optional)</li>
+                <li><strong>specialization</strong> (required, one of: CS, Physics, Chem, Math, Bio)</li>
+                <li><strong>level</strong> (required, number 1-4)</li>
+                <li><strong>semester</strong> (required, number 1-2)</li>
+              </ul>
+              <p className="mt-2">Make sure the file does not contain duplicate codes.</p>
+              <p className="mt-2 text-xs">Click "Download Template" to get a ready-to-use Excel file.</p>
+            </div>
           </div>
         </div>
       )}

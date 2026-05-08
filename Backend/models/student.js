@@ -9,11 +9,11 @@ const studentSchema = new mongoose.Schema({
     level: { type: Number, default: 1 },
     gradute_year: { type: Number, default: new Date().getFullYear() + 4 },
     specialization: { type: String, default: 'Undeclared' },//department
-    university: { type: String, default: 'Our University' },
+    university: { type: String, default: 'Cairo university' },
     email: { type: String, default: '' },
     phone: { type: String, default: '' },
     completedCourses: [{ type: String }],   
     currentCourses:   [{ type: String }],   
 },  { timestamps: true });
-
+//completeHours: { type: Number, default: 0 }, //can be calculated from completed courses
 module.exports = mongoose.model('Student', studentSchema);

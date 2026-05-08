@@ -15,7 +15,7 @@ export function NewsPage({ onBack }) {
   const fetchNews = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/news/admin/all', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/news/admin/all`, {
         headers: { Authorization: token }
       });
       setNewsList(res.data);
@@ -37,12 +37,12 @@ export function NewsPage({ onBack }) {
     try {
       const token = localStorage.getItem('token');
       if (editingId) {
-        await axios.put(`http://localhost:9000/news/admin/${editingId}`, form, {
+        await axios.put(`${import.meta.env.VITE_API_URL}/news/admin/${editingId}`, form, {
           headers: { Authorization: token }
         });
         toast.success('تم تعديل الخبر');
       } else {
-        await axios.post('http://localhost:9000/news/admin/add', form, {
+        await axios.post(`${import.meta.env.VITE_API_URL}/news/admin/add`, form, {
           headers: { Authorization: token }
         });
         toast.success('تم إضافة الخبر');
@@ -109,7 +109,7 @@ export function NewsPage({ onBack }) {
 const performDelete = async (id) => {
   try {
     const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:9000/news/admin/${id}`, {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/news/admin/${id}`, {
       headers: { Authorization: token }
     });
     toast.success('تم حذف الخبر');

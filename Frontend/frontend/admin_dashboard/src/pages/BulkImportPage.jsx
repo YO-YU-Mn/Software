@@ -47,7 +47,7 @@ export function BulkImportPage({ setPage }) {
         return;
       }
 
-      const response = await axios.post('http://localhost:9000/bulk-import/upload', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/bulk-import/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: token

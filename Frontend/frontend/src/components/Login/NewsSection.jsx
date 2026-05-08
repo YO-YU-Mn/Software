@@ -6,7 +6,7 @@ function NewsSection() {
   const [news ,setNews] =useState([]);
   useEffect(()=>{
     async function getNews(){
-      const respond = await fetch('http://localhost:9000/news/allnews',{method:'Get'});
+      const respond = await fetch(`${import.meta.env.VITE_API_URL}/news/allnews`,{method:'Get'});
       const data = await respond.json();
       setNews(data);
     }

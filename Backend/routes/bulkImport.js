@@ -111,7 +111,7 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
       
       validStudents.push({ data: studentData, row: rowNumber });
       codesToCheck.push(studentData.code);
-      }
+    }
     
     // التحقق من الأكواد المكررة في قاعدة البيانات
     const existingStudents = await Student.find({ code: { $in: codesToCheck } });

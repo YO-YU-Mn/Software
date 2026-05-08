@@ -16,7 +16,7 @@ function SchedulePage() {
     const fetchRegStatus = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:9000/settings/status', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/settings/status`, {
           headers: { Authorization: token }
         });
         setRegistrationOpen(res.data.registrationOpen);
@@ -31,7 +31,7 @@ function SchedulePage() {
   const fetchSchedule = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/courses/current', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/courses/current`, {
         headers: { Authorization: token }
       });
       setCourses(res.data);
@@ -58,7 +58,7 @@ function SchedulePage() {
           onClick: async () => {
             try {
               const token = localStorage.getItem('token');
-              await axios.delete('http://localhost:9000/courses/drop', {
+              await axios.delete(`${import.meta.env.VITE_API_URL}/courses/drop`, {
                 headers: { Authorization: token },
                 data: { course_id: courseId }
               });
@@ -88,7 +88,7 @@ function SchedulePage() {
           onClick: async () => {
             try {
               const token = localStorage.getItem('token');
-              await axios.delete('http://localhost:9000/courses/drop-all', {
+              await axios.delete(`${import.meta.env.VITE_API_URL}/courses/drop-all`, {
                 headers: { Authorization: token }
               });
               toast.success('تم حذف جميع المواد، يمكنك التسجيل من جديد');
@@ -234,7 +234,7 @@ function SchedulePage() {
       <div className="weekly-view">
         <h3><span></span> عرض أسبوعي</h3>
         <div className="weekly-grid">
-          {['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
+          {['Sunday', 'Monday', 'Teusday', 'Wendsday', 'Thursday', 'Friday','Saturday'].map(day => (
             <div key={day} className="week-day">
               <div className="day-header">
                 <span className="day-name">{day}</span>

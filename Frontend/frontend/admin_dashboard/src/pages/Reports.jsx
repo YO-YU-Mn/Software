@@ -14,7 +14,7 @@ export function Reports({ setPage }) {
     const fetchStudents = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:9000/students/all', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/students/all`, {
           headers: { Authorization: token }
         });
         setStudents(res.data);

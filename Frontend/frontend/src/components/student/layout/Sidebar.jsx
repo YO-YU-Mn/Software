@@ -1,8 +1,21 @@
 import { NavLink } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useState, useEffect } from "react";
 
 function Sidebar({ open, setOpen, registrationOpen }) {
-  const closeSidebar = () => setOpen(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleLinkClick = () => {
+    if (isMobile) setOpen(false);
+  };
 
   return (
     <div className={`student-sidebar ${open ? "open" : ""}`}>
@@ -12,7 +25,7 @@ function Sidebar({ open, setOpen, registrationOpen }) {
           to="/home_page"
           end
           className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          onClick={closeSidebar}
+          onClick={handleLinkClick}
         >
           الملف الشخصي
         </NavLink>
@@ -27,7 +40,7 @@ function Sidebar({ open, setOpen, registrationOpen }) {
               e.preventDefault();
               toast.error("تسجيل المواد مغلق حالياً");
             } else {
-              closeSidebar();
+              handleLinkClick();
             }
           }}
         >
@@ -37,18 +50,29 @@ function Sidebar({ open, setOpen, registrationOpen }) {
         <NavLink
           to="/home_page/schedule"
           className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          onClick={closeSidebar}
+          onClick={handleLinkClick}
         >
           جدولي الدراسي
         </NavLink>
 
+          <NavLink
+          to="/home_page/schedule-registration"
+          className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+          onClick={handleLinkClick}
+        >
+          AI Registration
+        </NavLink>
+
+
         <NavLink
           to="/"
           className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-          onClick={closeSidebar}
+          onClick={handleLinkClick}
         >
           تسجيل خروج
         </NavLink>
+
+
       </nav>
     </div>
   );

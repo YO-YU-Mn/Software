@@ -20,7 +20,7 @@ useEffect(() => {
   const fetchRegStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:9000/settings/status', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/settings/status`, {
         headers: { Authorization: token }
       });
       setRegistrationOpen(res.data.registrationOpen);
@@ -38,7 +38,7 @@ useEffect(() => {
     const fetchCourses = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:9000/courses/available-courses", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/courses/available-courses`, {
           headers: { Authorization: token }
         });
         
@@ -67,93 +67,74 @@ useEffect(() => {
   }
 
   function handleSelect(course) {
-    if (!registrationOpen) {
-      toast.error("تسجيل المواد مغلق حالياً");
-      return;
-    }
-    if (course.isRegistered) {
-      toast.error("هذه المادة مسجلة مسبقاً");
-      return;
+ if (!registrationOpen) {
+    toast.error("تسجيل المواد مغلق حالياً");
+    return;
+  }
+     if (course.isRegistered) {
+        toast.error("هذه المادة مسجلة مسبقاً");
+        return;
     }
     if (!course.canRegister) {
-      toast.error("لا يمكنك تسجيل هذه المادة (المتطلبات غير مكتملة أو السعة ممتلئة)");
-      return;
+        toast.error("لا يمكنك تسجيل هذه المادة (المتطلبات غير مكتملة أو السعة ممتلئة)");
+        return;
     }
     if (selectedCourses.find(c => c.id === course.id)) {
       setSelectedCourses(selectedCourses.filter(c => c.id !== course.id));
-      toast.success(`✅ تم إزالة "${course.name}"`);
       return;
     }
     if (totalHours + course.hours > 18) {
-      toast.error("⚠️ لا يمكن اختيار أكثر من 18 ساعة"); 
+      toast.error("لا يمكن اختيار أكثر من 18 ساعة"); 
       return;
     }
     if (hasConflict(course)) {
-      toast.error("⚠️ يوجد تعارض في المواعيد!"); 
+      toast.error("يوجد تعارض في المواعيد!"); 
       return;
     }
     setSelectedCourses([...selectedCourses, course]);
-    toast.success(`✅ تم إضافة "${course.name}" بنجاح`);
   }
 
   async function handleSubmit() {
     if (!registrationOpen) {
-      toast.error("تسجيل المواد مغلق حالياً");
-      return;
-    }
+    toast.error("تسجيل المواد مغلق حالياً");
+    return;
+  }
     if (selectedCourses.length === 0) {
-      toast.error("اختر مواد أولاً");
-      return;
+        toast.error("اختر مواد أولاً");
+        return;
     }
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("لم تقم بتسجيل الدخول. يرجى تسجيل الدخول أولاً");
-        return;
-      }
-      
-      const course_ids = selectedCourses.map(c => c.id);
-      console.log("Submitting courses:", course_ids);
+        const token = localStorage.getItem("token");
+        const course_ids = selectedCourses.map(c => c.id);
 
-      const response = await axios.post(
-        "http://localhost:9000/courses/register-courses",
-        { course_ids },
-        { headers: { Authorization: token } }
-      );
+        const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/courses/register-courses`,
+            { course_ids },
+            { headers: { Authorization: token } }
+        );
 
-      console.log("Response:", response.data);
-      
-      if (response.data.success) {
-        const { registered = [], errors = [] } = response.data;
-        
-        if (registered.length > 0) {
-          toast.success(`✅ تم تسجيل ${registered.length} مادة بنجاح!`);
-        }
-        
-        if (errors.length > 0) {
-          errors.forEach(err => {
-            console.log(`Course ${err.course_id} error:`, err.message);
-            toast.error(`⚠️ ${err.course_id}: ${err.message}`);
-          });
-        }
-        
-        if (registered.length > 0) {
-          setTimeout(() => {
+        if (response.data.success) {
+            const { registered, errors } = response.data;
+            if (errors.length > 0) {
+                toast.success(`تم تسجيل ${registered.length} مادة بنجاح`);
+                errors.forEach(err => {
+                    toast.error(`فشل تسجيل ${err.course_id}: ${err.message}`);
+                });
+            } else {
+                toast.success("تم تسجيل موادك بنجاح!");
+            }
             navigate("/home_page/schedule");
-          }, 2000);
+        } else {
+            toast.error("فشل في تسجيل المواد");
         }
-      } else {
-        toast.error("❌ فشل في تسجيل المواد");
-      }
     } catch (error) {
-      console.error("Registration error:", error);
-      const errorMsg = error.response?.data?.message || error.message || "حدث خطأ في الاتصال بالسيرفر";
-      toast.error(`❌ ${errorMsg}`);
+        console.error(error);
+        toast.error("حدث خطأ في الاتصال بالسيرفر");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  }
+}
 
   if (pageLoading) return <p>Loading...</p>;
 
