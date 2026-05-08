@@ -3,6 +3,7 @@ import { AuthProvider } from '../context/AuthContext';
 import Toast from 'react-native-toast-message';
 import QueryProvider from '../providers/QueryProvider';
 
+
 export default function RootLayout() {
   return (
     <AuthProvider>

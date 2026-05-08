@@ -4,6 +4,7 @@ const Notification = require('../models/notification');
 const Student = require('../models/student');
 const jwt = require('jsonwebtoken');
 const SECRET = 'university_secret_key';
+const PushToken = require('../models/pushToken');
 
 // ========== الوظائف القديمة (محفوظة كما هي) ==========
 
@@ -87,6 +88,22 @@ router.post('/add', async (req, res) => {
         }
         const notification = new Notification(req.body);
         await notification.save();
+        const tokens = await PushToken.find({});
+
+for (const t of tokens) {
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      to: t.expoPushToken,
+      title: req.body.title,
+      body: req.body.description,
+      sound: 'default',
+    }),
+  });
+}
         res.status(201).json(notification);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -102,5 +119,24 @@ router.delete('/admin/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+router.post('/save-token', async (req, res) => {
+  try {
+    const { studentCode, expoPushToken } = req.body;
+
+    await PushToken.findOneAndUpdate(
+      { studentCode },
+      { expoPushToken },
+      { upsert: true }
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = router;
