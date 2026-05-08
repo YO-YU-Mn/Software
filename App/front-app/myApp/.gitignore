@@ -44,4 +44,3 @@ app-example
 
 # Ignore env files with secrets
 Backend/.env
-.env
