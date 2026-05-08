@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ScheduleRegistration.css';
 
 const API = 'http://localhost:9000';
-const GROQ_API_KEY = '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'; // ← حط الكي الجديد هنا بعد ما تعمل rotate
+const GROQ_API_KEY = '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';
 const GROQ_API    = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL  = 'llama-3.3-70b-versatile';
 

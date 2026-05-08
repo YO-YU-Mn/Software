@@ -14,6 +14,12 @@ function RegistrationStatusCard({ status }) {
       // الآن يمكنك استخدام الـ router هنا
       router.push("/RegistrationPage"); 
     }
+    async function loginAi(event) {
+      console.log("Button Clicked");
+      
+      // الآن يمكنك استخدام الـ router هنا
+      router.push("/CourseRegistrationWithAi"); 
+    }
 
   return (
     <View style={styles.card}>
@@ -23,7 +29,7 @@ function RegistrationStatusCard({ status }) {
         <Text style={[styles.statusText, isOpen ? styles.statusOpenText : styles.statusClosedText]}>
           {isOpen ? "التسجيل مفتوح" : "التسجيل مغلق"}
         </Text>
-      </View>
+      </View>8
 
       <TouchableOpacity
         style={[styles.button, !isOpen && styles.buttonDisabled]}
@@ -32,6 +38,11 @@ function RegistrationStatusCard({ status }) {
       >
         <Text style={styles.buttonText}>تسجيل المقررات للفصل الحالي</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={loginAi}>
+                      <Text style={styles.buttonText}>Login With generation Ai</Text>
+      </TouchableOpacity>
+
     </View>
   );
 }

@@ -13,7 +13,11 @@ const studentSchema = new mongoose.Schema({
     email: { type: String, default: '' },
     phone: { type: String, default: '' },
     completedCourses: [{ type: String }],   
-    currentCourses:   [{ type: String }],   
+    currentCourses:   [{ type: String }], 
+    profilePicture: { 
+      type: String, 
+      default: '' 
+    },  
 },  { timestamps: true });
 //completeHours: { type: Number, default: 0 }, //can be calculated from completed courses
 module.exports = mongoose.model('Student', studentSchema);

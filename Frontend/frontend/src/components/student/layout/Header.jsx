@@ -1,7 +1,6 @@
 import useStudent from "../../../hooks/useStudent";
 function Header({ open,setOpen }) {
-
-  const student = useStudent(); 
+const { student } = useStudent(); 
 
   return (
     <header className="student-header">

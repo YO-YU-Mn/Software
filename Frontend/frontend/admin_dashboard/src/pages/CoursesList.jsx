@@ -179,9 +179,9 @@ export function CoursesList({ setPage }) {
       {/* التبويبات */}
       <div className="flex gap-0 mb-6" style={{ background: theme.card, borderRadius: 10, border: `1px solid ${theme.border}`, width: "fit-content" }}>
         {[
-          ["addCourse", "➕ Add Course"],
-          ["bulkUpload", "📂 Add File Courses"],
-          ["allCourses", "📋 All Courses"]
+          ["addCourse", " Add Course"],
+          ["bulkUpload", " Add File Courses"],
+          ["allCourses", " All Courses"]
         ].map(([id, label]) => (
           <button
             key={id}
@@ -293,7 +293,7 @@ export function CoursesList({ setPage }) {
               </div>
               <div className="flex gap-3">
                 <button onClick={handleBulkUpload} disabled={!file || uploading} className="btn btn-primary flex-1" style={{ background: G, padding: '12px' }}>{uploading ? 'Uploading...' : 'Upload File'}</button>
-                <button onClick={downloadCourseTemplate} className="btn" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.accent, padding: '12px' }}>📥 Download Template</button>
+                <button onClick={downloadCourseTemplate} className="btn" style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.accent, padding: '12px' }}> Download Template</button>
               </div>
               {uploadResult && (
                 <div className="mt-4">

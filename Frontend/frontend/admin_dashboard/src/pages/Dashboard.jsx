@@ -99,7 +99,7 @@ export function Dashboard({ setPage }) {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token) {
+         if (!token) {
           toast.error('يرجى تسجيل الدخول أولاً');
           return;
         }

@@ -6,12 +6,13 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "jsx": "react-native"  // <--- أضف هذا السطر هنا
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "app/(tabs)/ChatScreen.jsx"  ]
 }

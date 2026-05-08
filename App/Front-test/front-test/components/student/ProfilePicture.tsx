@@ -13,15 +13,26 @@ export default function ProfilePicture({ currentImageUrl, studentCode, onUploadS
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    setImageUrl(currentImageUrl && currentImageUrl !== '' ? currentImageUrl : defaultImage(studentCode));
+    if (currentImageUrl && currentImageUrl.trim() !== '') {
+      setImageUrl(currentImageUrl);
+    } else {
+      setImageUrl(defaultImage(studentCode));
+    }
   }, [currentImageUrl, studentCode]);
 
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Toast.show({ type: 'error', text1: 'الرجاء منح صلاحية الوصول إلى المعرض' });
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,  // ✅ الصيغة القديمة الصحيحة
       allowsEditing: true,
       quality: 0.7,
     });
+
     if (!result.canceled && result.assets[0].uri) {
       const formData = new FormData();
       formData.append('profilePic', {
@@ -31,7 +42,7 @@ export default function ProfilePicture({ currentImageUrl, studentCode, onUploadS
       } as any);
       setUploading(true);
       try {
-        const data = await uploadProfilePicture(token!, formData);
+        const data = await uploadProfilePicture(formData);
         if (data.success) {
           setImageUrl(data.imageUrl);
           Toast.show({ type: 'success', text1: 'تم تحديث الصورة بنجاح' });
@@ -49,7 +60,7 @@ export default function ProfilePicture({ currentImageUrl, studentCode, onUploadS
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: imageUrl }} style={styles.avatar} />
+      <Image source={{ uri: imageUrl || defaultImage(studentCode) }} style={styles.avatar} />
       <TouchableOpacity style={styles.uploadBtn} onPress={pickImage} disabled={uploading}>
         {uploading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.uploadText}>📷</Text>}
       </TouchableOpacity>

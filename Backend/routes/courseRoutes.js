@@ -215,6 +215,7 @@ router.get("/available-courses", auth, async (req, res) => {
 
 //in web
 router.post("/register-course", auth ,async (req, res) => {
+    console.log(req.body);
     const { course_id } = req.body;
     const student = await Student.findOne({ code: req.user.code });
     const course = await Course.findOne({ course_id });

@@ -15,14 +15,14 @@ router.get('/all', auth, async (req, res) => {
 // جيب بيانات الطالب by token
 router.get('/profile', auth, async (req, res) => {
     try {
-        const student = await Student.findOne({ code: req.user.code });
+       const student = await Student.findOne({ code: req.user.code }).select('+profilePicture');
         res.json(student);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// جيب طلاب تخصص معين في سنة معينة
+
 router.get('/department/:dep/level/:level', async (req, res) => {
     try{
         const students = await Student.find({
@@ -36,8 +36,6 @@ router.get('/department/:dep/level/:level', async (req, res) => {
 });
 
 
-// جيب كل طلاب تخصص معين
-// مثال: /student/department/CS
 router.get('/department/:dep', async (req, res) => {
    try{
      const students = await Student.find({ specialization: req.params.dep });
@@ -47,7 +45,6 @@ router.get('/department/:dep', async (req, res) => {
    }
 });
 
-// ضيف طالب جديد (الأدمن) in any department at any level i want this
 router.post('/addstudent', async (req, res) => {
     try {
         const existing = await Student.findOne({ code: req.body.code });
@@ -64,7 +61,6 @@ router.post('/addstudent', async (req, res) => {
     }
 });
 
-// عدّل بيانات طالب (الأدمن)
 router.put('/updatestudent/:code',  async (req, res) => {
     try {
         const updated = await Student.findOneAndUpdate(

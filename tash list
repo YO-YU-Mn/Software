@@ -1,0 +1,52 @@
+[33mc9014cb5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mYoussef_Branch[m[33m, [m[1;31morigin/Youssef_Branch[m[33m)[m HEAD@{0}: checkout: moving from mostafa2 to Youssef_Branch
+[33m5cfd5d0b[m[33m ([m[1;31morigin/mostafa2[m[33m, [m[1;32mmostafa2[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m5cfd5d0b[m[33m ([m[1;31morigin/mostafa2[m[33m, [m[1;32mmostafa2[m[33m)[m HEAD@{2}: checkout: moving from Youssef_Branch to mostafa2
+[33mc9014cb5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mYoussef_Branch[m[33m, [m[1;31morigin/Youssef_Branch[m[33m)[m HEAD@{3}: reset: moving to HEAD
+[33mc9014cb5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mYoussef_Branch[m[33m, [m[1;31morigin/Youssef_Branch[m[33m)[m HEAD@{4}: commit: last edit for this week (chat bot for web+ register with Ai for web + excel sheet for student and courses are done)
+[33m2ff4486d[m HEAD@{5}: commit: اضافه تسجيل مجموعه من االطلاب بشيت اكسيل
+[33m256dad07[m HEAD@{6}: commit: last change
+[33m0e303227[m HEAD@{7}: commit: make the backend of web and attach it with database ,
+[33mff8f3c1d[m HEAD@{8}: commit: last change make databse apperence
+[33m72116715[m HEAD@{9}: commit: add light theme to my branch
+[33m6470ca11[m HEAD@{10}: checkout: moving from main to Youssef_Branch
+[33m69308bc6[m[33m ([m[1;32mmain[m[33m)[m HEAD@{11}: reset: moving to ORIG_HEAD
+[33m69308bc6[m[33m ([m[1;32mmain[m[33m)[m HEAD@{12}: checkout: moving from Youssef_Branch to main
+[33m6470ca11[m HEAD@{13}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33md6517eb2[m HEAD@{14}: reset: moving to HEAD~1
+[33m23331802[m HEAD@{15}: commit: edit dashboard =>add light mode
+[33md6517eb2[m HEAD@{16}: commit: dashboard with web second week
+[33mc93d7d7e[m HEAD@{17}: checkout: moving from tawfek_branch to Youssef_Branch
+[33m589ad541[m[33m ([m[1;32mtawfek_branch[m[33m)[m HEAD@{18}: checkout: moving from Youssef_Branch to tawfek_branch
+[33mc93d7d7e[m HEAD@{19}: commit: last edit in folders
+[33md27eb2f9[m HEAD@{20}: commit: added registration page
+[33mdebc6714[m HEAD@{21}: commit: ٍAdded student_page
+[33m909280ef[m HEAD@{22}: commit: Login_Page
+[33mb0dca872[m HEAD@{23}: commit: install enveronment will use React Vite
+[33md53b3b05[m HEAD@{24}: checkout: moving from main to Youssef_Branch
+[33md53b3b05[m HEAD@{25}: clone: from https://github.com/YO-YU-Mn/Software.git
+[33mc9014cb5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mYoussef_Branch[m[33m, [m[1;31morigin/Youssef_Branch[m[33m)[m HEAD@{0}: checkout: moving from mostafa2 to Youssef_Branch
+[33m5cfd5d0b[m[33m ([m[1;31morigin/mostafa2[m[33m, [m[1;32mmostafa2[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m5cfd5d0b[m[33m ([m[1;31morigin/mostafa2[m[33m, [m[1;32mmostafa2[m[33m)[m HEAD@{2}: checkout: moving from Youssef_Branch to mostafa2
+[33mc9014cb5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mYoussef_Branch[m[33m, [m[1;31morigin/Youssef_Branch[m[33m)[m HEAD@{3}: reset: moving to HEAD
+[33mc9014cb5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mYoussef_Branch[m[33m, [m[1;31morigin/Youssef_Branch[m[33m)[m HEAD@{4}: commit: last edit for this week (chat bot for web+ register with Ai for web + excel sheet for student and courses are done)
+[33m2ff4486d[m HEAD@{5}: commit: اضافه تسجيل مجموعه من االطلاب بشيت اكسيل
+[33m256dad07[m HEAD@{6}: commit: last change
+[33m0e303227[m HEAD@{7}: commit: make the backend of web and attach it with database ,
+[33mff8f3c1d[m HEAD@{8}: commit: last change make databse apperence
+[33m72116715[m HEAD@{9}: commit: add light theme to my branch
+[33m6470ca11[m HEAD@{10}: checkout: moving from main to Youssef_Branch
+[33m69308bc6[m[33m ([m[1;32mmain[m[33m)[m HEAD@{11}: reset: moving to ORIG_HEAD
+[33m69308bc6[m[33m ([m[1;32mmain[m[33m)[m HEAD@{12}: checkout: moving from Youssef_Branch to main
+[33m6470ca11[m HEAD@{13}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33md6517eb2[m HEAD@{14}: reset: moving to HEAD~1
+[33m23331802[m HEAD@{15}: commit: edit dashboard =>add light mode
+[33md6517eb2[m HEAD@{16}: commit: dashboard with web second week
+[33mc93d7d7e[m HEAD@{17}: checkout: moving from tawfek_branch to Youssef_Branch
+[33m589ad541[m[33m ([m[1;32mtawfek_branch[m[33m)[m HEAD@{18}: checkout: moving from Youssef_Branch to tawfek_branch
+[33mc93d7d7e[m HEAD@{19}: commit: last edit in folders
+[33md27eb2f9[m HEAD@{20}: commit: added registration page
+[33mdebc6714[m HEAD@{21}: commit: ٍAdded student_page
+[33m909280ef[m HEAD@{22}: commit: Login_Page
+[33mb0dca872[m HEAD@{23}: commit: install enveronment will use React Vite
+[33md53b3b05[m HEAD@{24}: checkout: moving from main to Youssef_Branch
+[33md53b3b05[m HEAD@{25}: clone: from https://github.com/YO-YU-Mn/Software.git

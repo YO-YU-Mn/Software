@@ -24,6 +24,7 @@ const bulkImportRoutes = require('./routes/BulkImport');
 const bulkCourseRoutes = require('./routes/bulkCourseRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
 const advisorRoutes = require('./routes/advisorRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 
 const app = express(); 
@@ -46,7 +47,7 @@ app.use('/bulkImport', bulkImportRoutes);
 app.use('/bulkCourses', bulkCourseRoutes);
 app.use('/chatbot', chatbotRoutes);
 app.use('/advisor', advisorRoutes);
-
+app.use('/upload', uploadRoutes); //for pic
 
 
 //login Authontication
@@ -56,7 +57,7 @@ app.post('/login', async (req, res) => {
     const student = await Student.findOne({ code, password: Number(password) });
     if(student) {
         const token = jwt.sign({ code, role: 'student' }, SECRET);
-        return res.json({ success: true, token, role: 'student' });
+        return res.json({ success: true, token ,role: 'student', name: student.first_name });
     }    
     const admin = await Admin.findOne({ code, password: Number(password) });
     if(admin) {
@@ -67,14 +68,16 @@ app.post('/login', async (req, res) => {
 });
 
 
-//mongodb://localhost:27017//university => local 
+//mongodb://localhost:27017//university => local
+//mongodb+srv://MostafaMR7_db_user:PZm0rvQ0A0HVkV7u@clusterbymr7.ptds641.mongodb.net/?appName=ClusterByMR7
 // MongoDB Connection
 mongoose.connect("mongodb+srv://MostafaMR7_db_user:PZm0rvQ0A0HVkV7u@clusterbymr7.ptds641.mongodb.net/?appName=ClusterByMR7") // temp
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err)); 
+//mongodb+srv://ym884565_db_user:ohih5TaDEp085ENz@cluster0.hfmk9we.mongodb.net/?appName=Cluster0
 
 
 // Start Server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`);
 });

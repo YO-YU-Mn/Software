@@ -4,11 +4,13 @@ import StudentInfoCard from "../components/student/StudentInfoCard";
 import RegistrationStatusCard from "../components/student/RegistrationStatusCard";
 import NewsCard from "../components/student/NewsCard";
 
+
 function StudentDashboard() {
   const student = useStudent();
   const [notifications, setNotifications] = useState([]);
   const [regStatus, setRegStatus] = useState("closed");
   const [loadingStatus, setLoadingStatus] = useState(true);
+ 
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -37,10 +39,14 @@ function StudentDashboard() {
     fetchRegistrationStatus();
   }, []);
 
+
+
+
   if (!student) return <p>Loading...</p>;
 
   return (
     <div className="dashboard">
+
       <StudentInfoCard student={student} />
       <RegistrationStatusCard status={regStatus} />
       <section className="news-section">
