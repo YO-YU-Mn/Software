@@ -145,7 +145,7 @@ export default function SchedulePage() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>الجدول الدراسي</Text>
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-          <Text style={styles.resetButtonText}>🔄 إعادة تسجيل</Text>
+          <Text style={styles.resetButtonText}> إعادة تسجيل</Text>
         </TouchableOpacity>
       </View>
 
@@ -186,19 +186,19 @@ export default function SchedulePage() {
           {/* مواعيد المادة */}
           {course?.schedule && course.schedule.length > 0 && (
             <View style={styles.scheduleSection}>
-              <Text style={styles.scheduleTitle}>📍 مواعيد المحاضرات</Text>
+              <Text style={styles.scheduleTitle}> مواعيد المحاضرات</Text>
               {course.schedule.map((s: any, idx: number) => (
                 <View key={idx} style={styles.scheduleRow}>
                   <Text style={styles.scheduleDay}>{s.day || 'غير محدد'}</Text>
                   <Text style={styles.scheduleTime}>{s.time || 'غير محدد'}</Text>
-                  <Text style={styles.scheduleLocation}>🏢 {s.location || 'قاعة 101'}</Text>
+                  <Text style={styles.scheduleLocation}> {s.location || 'قاعة 101'}</Text>
                 </View>
               ))}
             </View>
           )}
 
           <TouchableOpacity style={styles.deleteButton} onPress={() => handleDrop(course.course_id)}>
-            <Text style={styles.deleteButtonText}>🗑️ حذف المادة</Text>
+            <Text style={styles.deleteButtonText}> delete</Text>
           </TouchableOpacity>
         </View>
       ))}

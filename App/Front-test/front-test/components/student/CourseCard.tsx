@@ -68,8 +68,8 @@ export default function CourseCard({ course, isSelected, onSelect, totalHours }:
       {!course.canRegister && !isSelected && (
         <View style={styles.warningContainer}>
           <Text style={styles.warningText}>
-            {!course.prerequisitesMet && "⚠️ لم تستوفِ المتطلبات السابقة لهذه المادة."}
-            {course.prerequisitesMet && !course.hasCapacity && "🚫 السعة ممتلئة لهذه المادة."}
+            {!course.prerequisitesMet && " لم تستوفِ المتطلبات السابقة لهذه المادة."}
+            {course.prerequisitesMet && !course.hasCapacity && " السعة ممتلئة لهذه المادة."}
           </Text>
         </View>
       )}
@@ -77,7 +77,7 @@ export default function CourseCard({ course, isSelected, onSelect, totalHours }:
       <View style={styles.courseActions}>
         {isSelected ? (
           <TouchableOpacity style={styles.btnRemove} onPress={() => onSelect(course)}>
-            <Text style={styles.btnTextWhite}>حذف</Text>
+            <Text style={styles.btnTextWhite}>delete</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -85,7 +85,7 @@ export default function CourseCard({ course, isSelected, onSelect, totalHours }:
             onPress={() => onSelect(course)}
             disabled={!canSelect || isOverLimit}
           >
-            <Text style={styles.btnTextWhite}>اختيار</Text>
+            <Text style={styles.btnTextWhite}>choose</Text>
           </TouchableOpacity>
         )}
       </View>

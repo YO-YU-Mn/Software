@@ -10,10 +10,9 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [specializations, setSpecializations] = useState([]);
 
-// قائمة التخصصات الثابتة (بدلاً من جلبها من API)
   const dep = ["CS", "Physics", "Chem", "Math", "Bio"];
 
-  // جلب التخصصات المتاحة
+  // جلب التخصصات للطالب فقط
   useEffect(() => {
     const fetchSpecializations = async () => {
       try {
@@ -48,6 +47,18 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
           headers: { Authorization: token }
         });
         toast.success('تم تحديث بيانات المادة');
+      } else if (type === 'admin') {
+        const payload = {
+          name: editData.name,
+          email: editData.email,
+        };
+        if (editData.password && editData.password.trim() !== '') {
+          payload.password = editData.password;
+        }
+        await axios.put(`http://localhost:9000/admins/updateAdmin/${item.code}`, payload, {
+          headers: { Authorization: token }
+        });
+        toast.success('تم تحديث بيانات admin');
       }
       setIsEditing(false);
       onClose();
@@ -59,11 +70,10 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
     }
   };
 
-  // تأكيد الحذف باستخدام toast
   const handleDelete = () => {
     toast((t) => (
       <div style={{ direction: 'rtl', textAlign: 'center' }}>
-        <p>هل أنت متأكد من حذف {type === 'student' ? 'الطالب' : 'المادة'} "{item.name || item.title}"؟</p>
+        <p>هل أنت متأكد من حذف {type === 'student' ? 'الطالب' : type === 'course' ? 'المادة' : 'المدير'} "{item.name || item.title || item.code}"؟</p>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
           <button
             onClick={() => {
@@ -79,7 +89,7 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
               cursor: 'pointer'
             }}
           >
-            Yes
+            نعم
           </button>
           <button
             onClick={() => toast.dismiss(t.id)}
@@ -92,7 +102,7 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
               cursor: 'pointer'
             }}
           >
-            No
+            لا
           </button>
         </div>
       </div>
@@ -107,12 +117,17 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
         await axios.delete(`http://localhost:9000/students/delete/${item.code}`, {
           headers: { Authorization: token }
         });
-        toast.success('تم حذف الطالب');
+        toast.success('student deleted');
       } else if (type === 'course') {
         await axios.delete(`http://localhost:9000/courses/deleteCourse/${item._id}`, {
           headers: { Authorization: token }
         });
-        toast.success('تم حذف المادة');
+        toast.success('course deleted');
+      } else if (type === 'admin') {
+        await axios.delete(`http://localhost:9000/admins/delAdmin/${item.code}`, {
+          headers: { Authorization: token }
+        });
+        toast.success('admin deleted');  
       }
       onClose();
       if (onRefresh) onRefresh();
@@ -137,26 +152,33 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
 
   const fields = type === 'student'
     ? [
-        { label: 'code', key: 'code', type: 'text', readonly: true },
-        { label: 'name', key: 'name', type: 'text' },
-        { label: 'Department', key: 'specialization', type: 'select', options: specializations },
-        { label: 'level', key: 'level', type: 'number' },
-        { label: 'semester', key: 'semester', type: 'number' },
-        { label: 'email ', key: 'email', type: 'email' },
-        { label: 'phone', key: 'phone', type: 'text' },
-        { label: 'GPA', key: 'GPA', type: 'number', step: 0.1 },
+        { label: 'الكود', key: 'code', type: 'text', readonly: true },
+        { label: 'الاسم الكامل', key: 'name', type: 'text' },
+        { label: 'القسم', key: 'specialization', type: 'select', options: specializations },
+        { label: 'المستوى', key: 'level', type: 'number' },
+        { label: 'الترم', key: 'semester', type: 'number' },
+        { label: 'البريد الإلكتروني', key: 'email', type: 'email' },
+        { label: 'رقم الهاتف', key: 'phone', type: 'text' },
+        { label: 'المعدل التراكمي', key: 'GPA', type: 'number', step: 0.1 },
       ]
-    : [
-        { label: 'Course ID', key: 'course_id', type: 'text', readonly: true },
-        { label: 'Title', key: 'title', type: 'text' },
-        { label: 'Department', key: 'specialization', type: 'select', options: dep },
-        { label: 'Level', key: 'level', type: 'number' },
-        { label: 'Semester', key: 'semester', type: 'number' },
-        { label: 'Credits', key: 'credits', type: 'number' },
-        { label: 'Instructor', key: 'instructor', type: 'text' },
-        { label: 'Capacity', key: 'capacity', type: 'number' },
-        { label: 'Enrolled', key: 'enrolledStudents', type: 'number', readonly: true },
-      ];
+    : type === 'course'
+      ? [
+          { label: 'كود المادة', key: 'course_id', type: 'text', readonly: true },
+          { label: 'عنوان المادة', key: 'title', type: 'text' },
+          { label: 'القسم', key: 'specialization', type: 'select', options: dep },
+          { label: 'المستوى', key: 'level', type: 'number' },
+          { label: 'الترم', key: 'semester', type: 'number' },
+          { label: 'عدد الساعات', key: 'credits', type: 'number' },
+          { label: 'المدرس', key: 'instructor', type: 'text' },
+          { label: 'السعة', key: 'capacity', type: 'number' },
+          { label: 'المسجلين', key: 'enrolledStudents', type: 'number', readonly: true },
+        ]
+      : [
+          { label: 'Admin code ', key: 'code', type: 'text', readonly: true },
+          { label: 'الاسم الكامل', key: 'name', type: 'text' },
+          { label: 'البريد الإلكتروني', key: 'email', type: 'email' },
+          { label: 'كلمة المرور ', key: 'password', type: 'password', hideInView: true },
+        ];
 
   return (
     <div className="panel-overlay" onClick={onClose}>
@@ -165,8 +187,10 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
         <div className="panel-content">
           <div className="flex justify-between items-start mb-5">
             <div>
-              <div className="panel-title" style={{ color: theme.muted }}>{type === 'student' ? 'Student Profile' : 'Course Details'}</div>
-              <h2 className="panel-name" style={{ color: theme.white }}>{item.name || item.title}</h2>
+              <div className="panel-title" style={{ color: theme.muted }}>
+                {type === 'student' ? 'بيانات الطالب' : type === 'course' ? 'بيانات المادة' : 'admin data '}
+              </div>
+              <h2 className="panel-name" style={{ color: theme.white }}>{item.name || item.title || `Admin #${item.code}`}</h2>
             </div>
             <button onClick={onClose} className="panel-close" style={{ background: theme.surface, borderColor: theme.border, color: theme.muted }}>✕</button>
           </div>
@@ -177,7 +201,11 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
                 <div key={field.key} className="panel-info-row" style={{ background: i % 2 === 0 ? theme.surface : theme.card }}>
                   <span className="panel-info-label" style={{ color: theme.muted }}>{field.label}</span>
                   <span className="panel-info-value" style={{ color: theme.text }}>
-                    {field.readonly ? item[field.key] : (item[field.key] ?? '—')}
+                    {field.readonly
+                      ? item[field.key]
+                      : field.hideInView
+                        ? '•••••••'
+                        : (item[field.key] ?? '—')}
                   </span>
                 </div>
               ))}
@@ -196,7 +224,7 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
                       className="input-field"
                       style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
                     >
-                      <option value="">Choose {field.label}</option>
+                      <option value="">اختر {field.label}</option>
                       {field.options.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
@@ -219,18 +247,18 @@ export function DetailPanel({ item, type, onClose, onRefresh }) {
           <div className="flex gap-2 mt-4">
             {!isEditing ? (
               <>
-                <button onClick={() => setIsEditing(true)} className="btn" style={{ background: theme.accent, color: '#fff', padding: '8px 16px' }}> Edit</button>
-                <button onClick={handleDelete} className="btn" style={{ background: theme.red, color: '#fff', padding: '8px 16px' }}> Delete</button>
+                <button onClick={() => setIsEditing(true)} className="btn" style={{ background: theme.accent, color: '#fff', padding: '8px 16px' }}> تعديل</button>
+                <button onClick={handleDelete} className="btn" style={{ background: theme.red, color: '#fff', padding: '8px 16px' }}> حذف</button>
               </>
             ) : (
               <>
-                <button onClick={handleSave} disabled={loading} className="btn" style={{ background: theme.green, color: '#fff', padding: '8px 16px' }}>{loading ? 'جاري...' : 'Save'}</button>
-                <button onClick={() => setIsEditing(false)} className="btn" style={{ background: theme.border, color: theme.muted, padding: '8px 16px' }}>Cancel</button>
+                <button onClick={handleSave} disabled={loading} className="btn" style={{ background: theme.green, color: '#fff', padding: '8px 16px' }}>{loading ? 'جاري...' : 'حفظ'}</button>
+                <button onClick={() => setIsEditing(false)} className="btn" style={{ background: theme.border, color: theme.muted, padding: '8px 16px' }}>إلغاء</button>
               </>
             )}
           </div>
 
-          <button onClick={onClose} className="btn btn-primary w-full mt-4 py-3 text-base" style={{ background: `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})` }}>Close</button>
+          <button onClick={onClose} className="btn btn-primary w-full mt-4 py-3 text-base" style={{ background: `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})` }}>إغلاق</button>
         </div>
       </div>
     </div>

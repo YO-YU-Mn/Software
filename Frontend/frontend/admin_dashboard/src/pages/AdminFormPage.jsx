@@ -1,135 +1,246 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { DetailPanel } from "../components/DetailPanel";
+import toast from 'react-hot-toast';
 
-const ADMIN_PASSWORD = ""; 
+// -- استخدم الرابط الكامل للباك إند (عدّل حسب إعداداتك) --
+const API_BASE = "http://localhost:9000/admins";
 
-export function AdminFormPage({ onBack }) {
-
+export function AdminFormPage({ onBack  }) {
   const { theme } = useTheme();
   const G = `linear-gradient(135deg, ${theme.accent2}, ${theme.accent})`;
 
-  const [unlocked, setUnlocked]   = useState(false);
-  const [passInput, setPassInput] = useState("");
-  const [passErr, setPassErr]     = useState(false);
-  const [showPass, setShowPass]   = useState(false);
-  const [data, setData]           = useState({ name:"", email:"", role:"admin" });
-  const [ok, setOk]               = useState(false);
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [panel, setPanel] = useState(null);
+  const [tab, setTab] = useState("addAdmin");
 
-  const handleUnlock = () => {
-    if (passInput === ADMIN_PASSWORD) { setUnlocked(true); setPassErr(false); }
-    else { setPassErr(true); setPassInput(""); setTimeout(()=>setPassErr(false), 3000); }
+  const [form, setForm] = useState({
+    code: "", name: "", email: "", password: ""
+  });
+  const [addSuccess, setAddSuccess] = useState(false);
+
+  // --- Helper: استدعاء fetch مع التوكن ---
+  const fetchWithToken = async (url, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: token }),
+      ...options.headers,
+    };
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP ${response.status}`);
+    }
+    return response.json();
   };
 
-  const handleSave = () => {
-    if (data.name && data.email) {
-      setOk(true);
-      setData({ name:"", email:"", role:"admin" });
-      setTimeout(()=>setOk(false), 3000);
+  // --- جلب جميع الأدمن (GET /allAdmins) ---
+  const fetchAdmins = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchWithToken(`${API_BASE}/allAdmins`);
+      setAdmins(data);
+    } catch (err) {
+      toast.error('Failed to load admins: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
+
+  // --- إضافة أدمن (POST /addAdmin) ---
+  const handleAddAdmin = async () => {
+    if (!form.code || !form.name || !form.email || !form.password) {
+      toast.error('All fields are required');
+      return;
+    }
+    try {
+      const payload = {
+        code: Number(form.code),
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      };
+      const result = await fetchWithToken(`${API_BASE}/addAdmin`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      if (result.success === false) {
+        toast.error(result.message);
+        return;
+      }
+      toast.success('Admin added successfully');
+      setForm({ code: "", name: "", email: "", password: "" });
+      setAddSuccess(true);
+      setTimeout(() => setAddSuccess(false), 3000);
+      fetchAdmins(); // تحديث القائمة
+    } catch (err) {
+      toast.error(err.message || 'Failed to add admin');
+    }
+  };
+
+  if (loading) return <p style={{ color: theme.muted, textAlign: 'center', padding: '2rem' }}>Loading...</p>;
+
   return (
-    <div className="p-7 flex-1 flex flex-col" style={{ background: theme.bg }}>
-      <button onClick={onBack} className="btn-back" style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}>
+    <div className="p-7 flex-1 overflow-y-auto" style={{ background: theme.bg }}>
+      <button
+        onClick={onBack}
+        className="btn-back"
+        style={{ background: theme.card, color: theme.muted, borderColor: theme.border }}
+      >
         ← Back
       </button>
+      <h1 className="m-0 mb-5 text-3xl font-extrabold" style={{ color: theme.white }}>Admins</h1>
 
-      {/* PASSWORD GATE */}
-      {!unlocked ? (
-        <div className="max-w-md mx-auto mt-10 card text-center" style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: 16, padding: 36 }}>
-          <div className="text-4xl mb-4">🔐</div>
-          <h2 className="m-0 mb-1 text-xl font-extrabold" style={{ color: theme.white }}>Admin Access Required</h2>
-          <p className="text-sm mb-6" style={{ color: theme.muted }}>Enter the admin password to continue</p>
+      {/* Tabs */}
+      <div className="flex gap-0 mb-6" style={{ background: theme.card, borderRadius: 10, border: `1px solid ${theme.border}`, width: "fit-content" }}>
+        {[
+          ["addAdmin", " Add Admin"],
+          ["allAdmins", " All Admins"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className="btn"
+            style={{
+              padding: "10px 26px",
+              borderRadius: 9,
+              background: tab === id ? G : "transparent",
+              color: tab === id ? "#fff" : theme.muted,
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-          {passErr && (
-            <div className="message message-error mb-4" style={{ background: `${theme.red}18`, color: theme.red, borderColor: `${theme.red}35` }}>
-              ✗ Incorrect password. Try again.
-            </div>
-          )}
-
-          <div className="relative mb-4">
+      {/* تبويب إضافة أدمن */}
+      {tab === "addAdmin" && (
+        <div className="card" style={{ background: theme.card, borderColor: theme.border, padding: 20 }}>
+          <div className="font-semibold mb-3" style={{ color: theme.white, fontSize: 14 }}>Add New Admin</div>
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <input
-              type={showPass ? "text" : "password"}
-              placeholder="Enter password…"
-              value={passInput}
-              onChange={e=>setPassInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&handleUnlock()}
-              className="input-field w-full"
-              style={{
-                background: theme.surface,
-                border: `1px solid ${passErr ? theme.red : theme.border}`,
-                color: theme.text,
-                paddingRight: 44,
-                letterSpacing: passInput && !showPass ? 4 : 1
-              }}
-              onFocus={e=>e.target.style.borderColor = passErr ? theme.red : theme.accent}
-              onBlur={e=>e.target.style.borderColor = passErr ? theme.red : theme.border}
-              autoFocus
+              placeholder="Admin Code *"
+              type="number"
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: e.target.value })}
+              className="input-field"
+              style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}
             />
-            <button
-              onClick={()=>setShowPass(v=>!v)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-transparent border-none cursor-pointer"
-              style={{ color: theme.muted, fontSize: 16 }}
+            <input
+              placeholder="Full Name *"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="input-field"
+              style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}
+            />
+            <input
+              placeholder="Email *"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="input-field"
+              style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}
+            />
+            <input
+              placeholder="Password *"
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="input-field"
+              style={{ background: theme.surface, borderColor: theme.border, color: theme.text }}
+            />
+          </div>
+
+          {addSuccess && (
+            <div
+              className="message message-success text-center mb-4"
+              style={{
+                background: `${theme.green}18`,
+                color: theme.green,
+                borderColor: `${theme.green}35`,
+              }}
             >
-              {showPass ? "🙈" : "👁"}
-            </button>
-          </div>
-
-          <button onClick={handleUnlock} className="btn btn-primary w-full py-3 text-base" style={{ background: G }}> Unlock</button>
-        </div>
-      ) : (
-        /* REGISTER FORM */
-        <div className="max-w-md mx-auto card" style={{ background: theme.card, border: `1px solid ${theme.accent}30`, borderRadius: 16, padding: 34 }}>
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="text-lg"></span>
-            <h2 className="m-0 text-xl font-extrabold" style={{ color: theme.white }}>Register New Admin</h2>
-          </div>
-          <div className="h-1 w-12 mx-auto mb-6 rounded" style={{ background: G }} />
-
-          {ok && (
-            <div className="message message-success text-center mb-4" style={{ background: `${theme.green}18`, color: theme.green, borderColor: `${theme.green}35` }}>
-               Admin registered successfully!
+              ✓ Admin added successfully!
             </div>
           )}
 
-          <div className="flex flex-col gap-4">
-            {[["name","Full Name","text"],["email","Email Address","email"]].map(([k,l,t]) => (
-              <div key={k}>
-                <label className="input-label" style={{ color: theme.muted }}>{l}</label>
-                <input
-                  type={t}
-                  value={data[k]}
-                  onChange={e=>setData({...data,[k]:e.target.value})}
-                  className="input-field"
-                  style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
-                  onFocus={e=>e.target.style.borderColor=theme.accent}
-                  onBlur={e=>e.target.style.borderColor=theme.border}
-                />
-              </div>
-            ))}
-            <div>
-              <label className="input-label" style={{ color: theme.muted }}>Role</label>
-              <select
-                value={data.role}
-                onChange={e=>setData({...data,role:e.target.value})}
-                className="input-field"
-                style={{ background: theme.surface, border: `1px solid ${theme.border}`, color: theme.text }}
-              >
-                <option value="admin">Admin</option>
-                <option value="superadmin">Super Admin</option>
-              </select>
-            </div>
-            <button onClick={handleSave} className="btn btn-primary mt-1 py-3 text-base" style={{ background: G }}>Confirm & Save</button>
+          <div className="flex gap-2">
             <button
-              onClick={()=>{setUnlocked(false);setPassInput("");}}
+              onClick={handleAddAdmin}
               className="btn"
-              style={{ background: `${theme.red}15`, color: theme.red, border: `1px solid ${theme.red}28`, padding: 10, fontSize: 13, fontWeight: 600 }}
+              style={{ background: theme.green, color: theme.bg, padding: "8px 18px", fontWeight: 700 }}
             >
-               Lock Page
+              Save Admin
+            </button>
+            <button
+              onClick={() => setForm({ code: "", name: "", email: "", password: "" })}
+              className="btn"
+              style={{ background: theme.border, color: theme.text, padding: "8px 18px" }}
+            >
+              Clear
             </button>
           </div>
         </div>
       )}
+
+      {/* تبويب عرض كل الأدمن (بطاقات) */}
+      {tab === "allAdmins" && (
+        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
+          {admins.length === 0 ? (
+            <p style={{ color: theme.muted }}>No admins yet</p>
+          ) : (
+            admins.map((admin) => (
+              <div
+                key={admin._id}
+                onClick={() => setPanel(admin)}
+                className="card cursor-pointer"
+                style={{ background: theme.card, borderColor: theme.border, padding: 20 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = theme.accent + "55";
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = theme.border;
+                  e.currentTarget.style.transform = "none";
+                }}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="font-bold" style={{ color: theme.white, fontSize: 14 }}>{admin.name}</div>
+                    <div className="text-sm" style={{ color: theme.muted }}>{admin.email}</div>
+                  </div>
+                  <span
+                    className="px-2 py-1 rounded-full text-xs font-semibold"
+                    style={{ background: `${theme.accent}20`, color: theme.accent }}
+                  >
+                    #{admin.code}
+                  </span>
+                </div>
+                <div className="text-center p-3 rounded" style={{ background: theme.surface }}>
+                  <div className="text-xs uppercase" style={{ color: theme.muted }}>Admin Code</div>
+                  <div className="text-lg font-extrabold" style={{ color: theme.accent }}>{admin.code}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* لوحة التفاصيل (DetailPanel) – داخلها بيستخدم نفس الـ fetch للتحديث والحذف */}
+      <DetailPanel
+        key={panel?._id}
+        item={panel}
+        type="admin"
+        onClose={() => setPanel(null)}
+        onRefresh={fetchAdmins}
+      />
     </div>
   );
 }

@@ -314,7 +314,7 @@ ${coursesDescription}
             onPress={startGenerate}
             disabled={selectedCourses.size === 0}
           >
-            <Text>🚀 Generate جدولك</Text>
+            <Text> Generate جدولك</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -335,7 +335,7 @@ ${coursesDescription}
             ))}
           </View>
           <TouchableOpacity style={styles.confirmBtn} onPress={generateSchedule} disabled={!chosenPref}>
-            <Text>توليد الجدول ←</Text>
+            <Text>توليد الجدول </Text>
           </TouchableOpacity>
         </View>
       )}
