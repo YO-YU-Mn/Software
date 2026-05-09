@@ -5,11 +5,12 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
  * مكون بطاقة المادة الدراسية (CourseCard)
  * تم تحويله ليتناسب مع بيئة React Native
  */
-function CourseCard({ course, isSelected, onSelect, totalHours }) {
-  
-  // منطق التحقق من إمكانية التسجيل
+function CourseCard({ course, isSelected, onSelect, totalHours, maxCredits = 18, suggestedIds = [] }) {
   const canSelect = course.canRegister && !isSelected;
-  const isOverLimit = totalHours + (course?.hours || 0) > 18;
+  const limit = maxCredits ?? 18;
+  const isOverLimit = totalHours + (course?.hours || 0) > limit;
+  const isSuggested = suggestedIds.includes(course?.id);
+  const blockReasons = Array.isArray(course.blockReasons) ? course.blockReasons : [];
 
   // 1. حالة المادة المسجلة مسبقاً (Registered State)
   if (course.isRegistered) {
@@ -50,7 +51,12 @@ function CourseCard({ course, isSelected, onSelect, totalHours }) {
 
   // 2. الحالة الطبيعية للمادة (متاحة للتسجيل أو مختارة)
   return (
-    <View style={[styles.courseCard, isSelected && styles.selectedCard]}>
+    <View style={[styles.courseCard, isSelected && styles.selectedCard, isSuggested && styles.suggestedCard]}>
+      {isSuggested ? (
+        <View style={styles.suggestRibbon}>
+          <Text style={styles.suggestRibbonText}>مقترَحة من المساعد الأكاديمي</Text>
+        </View>
+      ) : null}
       <View style={styles.courseHeader}>
         <Text style={styles.courseCode}>{course?.id || 'CS101'}</Text>
         <View style={styles.hoursBadge}>
@@ -77,12 +83,25 @@ function CourseCard({ course, isSelected, onSelect, totalHours }) {
       {/* رسالة التحذير للمتطلبات أو السعة */}
       {!course.canRegister && !isSelected && (
         <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>
-            {!course.prerequisitesMet && "⚠️ لم تستوفِ المتطلبات السابقة لهذه المادة."}
-            {course.prerequisitesMet && !course.hasCapacity && "🚫 السعة ممتلئة لهذه المادة."}
-          </Text>
+          {blockReasons.length > 0 ? (
+            blockReasons.map((reason, idx) => (
+              <Text key={idx} style={styles.warningText}>
+                ⚠️ {reason}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.warningText}>
+              {!course.prerequisitesMet && '⚠️ لم تستوفِ المتطلبات السابقة لهذه المادة.'}
+              {course.prerequisitesMet && !course.hasCapacity && '🚫 السعة ممتلئة لهذه المادة.'}
+            </Text>
+          )}
         </View>
       )}
+      {isOverLimit && canSelect ? (
+        <Text style={styles.overloadText}>
+          تجاوز حد الساعات المسموح ({limit} ساعة).
+        </Text>
+      ) : null}
 
       <View style={styles.courseActions}>
         {isSelected ? (
@@ -122,6 +141,15 @@ const styles = StyleSheet.create({
   },
   registeredCard: { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' },
   selectedCard: { borderColor: '#2563eb', borderWidth: 2 },
+  suggestedCard: { borderColor: '#0ea5e9', borderWidth: 1.5 },
+  suggestRibbon: {
+    backgroundColor: '#e0f2fe',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  suggestRibbonText: { fontSize: 12, fontWeight: '700', color: '#0369a1' },
   courseHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   courseCode: { fontWeight: 'bold', color: '#64748b' },
   hoursBadge: { backgroundColor: '#e2e8f0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
@@ -135,7 +163,8 @@ const styles = StyleSheet.create({
   scheduleTime: { fontSize: 12 },
   scheduleLocation: { fontSize: 12, fontStyle: 'italic' },
   warningContainer: { padding: 8, backgroundColor: '#fff1f2', borderRadius: 6, marginBottom: 12 },
-  warningText: { color: '#e11d48', fontSize: 12 },
+  warningText: { color: '#e11d48', fontSize: 12, marginBottom: 4 },
+  overloadText: { color: '#c2410c', fontSize: 12, fontWeight: '600', marginBottom: 8 },
   courseActions: { marginTop: 8 },
   btn: { padding: 12, borderRadius: 8, alignItems: 'center' },
   btnSelect: { backgroundColor: '#2563eb', padding: 12, borderRadius: 8, alignItems: 'center' },

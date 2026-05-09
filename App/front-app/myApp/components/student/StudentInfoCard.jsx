@@ -1,5 +1,6 @@
 // StudentInfoCard.jsx — React Native
 import { View, Text, StyleSheet } from "react-native";
+import { colors, space, radius, type, elevationShadow } from "@/constants/designTokens";
 
 const FIELDS = [
   { label: "الاسم",           key: "name" },
@@ -31,23 +32,18 @@ function StudentInfoCard({ student }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 22,
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: space.lg,
     borderWidth: 1,
     borderColor: "rgba(203,213,225,0.4)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.10,
-    shadowRadius: 16,
-    elevation: 4,
+    ...elevationShadow(2),
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#0f172a",
-    marginBottom: 16,
-    paddingBottom: 12,
+    ...type.headline,
+    color: colors.dark,
+    marginBottom: space.md,
+    paddingBottom: space.sm,
     borderBottomWidth: 2,
     borderBottomColor: "rgba(37,99,235,0.2)",
     textAlign: "right",
@@ -55,18 +51,18 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    gap: space.sm,
   },
   gridItem: {
     width: "47%",
     backgroundColor: "rgba(241,245,249,0.7)",
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: radius.sm,
+    padding: space.sm,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: colors.border,
   },
   gridLabel: {
-    color: "#2563eb",
+    color: colors.primary,
     fontWeight: "600",
     fontSize: 11,
     textTransform: "uppercase",
@@ -75,8 +71,8 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   gridValue: {
-    color: "#1e293b",
-    fontSize: 14,
+    ...type.callout,
+    color: colors.darkMid,
     fontWeight: "500",
     textAlign: "right",
   },

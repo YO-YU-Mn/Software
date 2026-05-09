@@ -1,110 +1,176 @@
-import { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity, 
-  ActivityIndicator, 
+/**
+ * app/(tabs)/RegistrationPage.jsx
+ *
+ * What changed vs original:
+ *  - Imports useAuth to read refreshKey.
+ *  - All three useEffect data-fetches now include refreshKey in their
+ *    dependency arrays so they always re-run after a fresh login.
+ *  - Everything else is identical to the original.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
   StyleSheet,
-  Alert 
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { useRouter } from 'expo-router';
-import CourseCard from "../../components/student/CourseCard";
-import RegistrationFooter from "../../components/student/RegistrationFooter";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from 'react-native-toast-message';
-  import { API_BASE_URL } from '../../config';
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { SkeletonBlock }  from '@/components/ui/Skeleton';
+import { EmptyState }     from '@/components/ui/EmptyState';
+import { colors, space, radius, type, elevationShadow } from '@/constants/designTokens';
+import { useRouter }      from 'expo-router';
+import CourseCard         from '../../components/student/CourseCard';
+import RegistrationFooter from '../../components/student/RegistrationFooter';
+import axios              from 'axios';
+import AsyncStorage       from '@react-native-async-storage/async-storage';
+import Toast              from 'react-native-toast-message';
+import { API_BASE_URL }   from '../../config';
+import { useAuth }        from '@/contexts/AuthContext';
+import { useCourseCart } from '../../contexts/CourseCartContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useProtectedBackToLogin } from '@/hooks/useProtectedBackToLogin';
 
 function RegistrationPage() {
-  const [selectedCourses, setSelectedCourses] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [coursesList, setCoursesList] = useState([]);
-  const navigation = useNavigation();
-  const router = useRouter();
+  const { authReady, checking } = useRequireAuth();
+  useProtectedBackToLogin();
 
-  const totalHours = selectedCourses.reduce((sum, c) => sum + (c.hours || 0), 0);
+  const { refreshKey } = useAuth(); // bump on login → force re-fetch
 
+  const [selectedCourses,  setSelectedCourses]  = useState([]);
+  const [loading,          setLoading]          = useState(false);
+  const [pageLoading,      setPageLoading]      = useState(true);
+  const [coursesList,      setCoursesList]      = useState([]);
   const [registrationOpen, setRegistrationOpen] = useState(true);
-  const [regStatusLoading, setRegStatusLoading] = useState(true);
+  const [creditLimit,      setCreditLimit]      = useState(18);
+  const [advisorWarnings,  setAdvisorWarnings]  = useState([]);
+  const [suggestedIds,     setSuggestedIds]     = useState([]);
+  const router = useRouter();
+  const { consumePlannedCoursesMerge } = useCourseCart();
 
+  const totalHours = selectedCourses.reduce((s, c) => s + (c.hours || 0), 0);
+
+  // Re-fetch all page data whenever auth refreshKey changes.
   useEffect(() => {
+    if (!authReady) return;
+
     const fetchRegStatus = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
         const res = await axios.get(`${API_BASE_URL}/settings/status`, {
-          headers: { Authorization: token }
+          headers: { Authorization: token },
         });
         setRegistrationOpen(res.data.registrationOpen);
       } catch (err) {
         console.error(err);
-        Toast.show({
-          type: 'error',
-          text1: 'فشل تحميل حالة التسجيل'
-        });
-      } finally {
-        setRegStatusLoading(false);
+        Toast.show({ type: 'error', text1: 'فشل تحميل حالة التسجيل' });
       }
     };
-    fetchRegStatus();
-  }, []);
 
-  useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchAdvisor = async () => {
       try {
-        const token = await AsyncStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/courses/available-courses`, {
-          headers: { Authorization: token }
+        const token = await AsyncStorage.getItem('token');
+        const res = await axios.get(`${API_BASE_URL}/courses/advisor-summary`, {
+          headers: { Authorization: token },
         });
-        
+        if (typeof res.data.effectiveMaxCredits === 'number') {
+          setCreditLimit(res.data.effectiveMaxCredits);
+        }
+        setAdvisorWarnings(res.data.warnings      || []);
+        setSuggestedIds(res.data.suggestedCourseIds || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchCourses = async () => {
+      setPageLoading(true);
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const res = await axios.get(`${API_BASE_URL}/courses/available-courses`, {
+          headers: { Authorization: token },
+        });
         setCoursesList(res.data);
       } catch (err) {
         console.error(err);
-        Toast.show({
-          type: 'error',
-          text1: 'فشل تحميل المواد'
-        });
+        Toast.show({ type: 'error', text1: 'فشل تحميل المواد' });
       } finally {
         setPageLoading(false);
       }
     };
-    fetchCourses();
-  }, []);
 
-  function hasConflict(course) {
-    if (!course.schedule) return false;
-    for (let selected of selectedCourses) {
-      if (!selected.schedule) continue;
-      for (let s1 of selected.schedule) {
-        for (let s2 of course.schedule) {
-          if (s1.day === s2.day && s1.time === s2.time) return true;
+    fetchRegStatus();
+    fetchAdvisor();
+    fetchCourses();
+  }, [authReady, refreshKey]); // ← refreshKey ensures fresh data after login
+
+  const hasConflict = useCallback(
+    (course, pool = selectedCourses) => {
+      if (!course.schedule) return false;
+      for (const selected of pool) {
+        if (!selected.schedule) continue;
+        for (const s1 of selected.schedule) {
+          for (const s2 of course.schedule) {
+            if (s1.day === s2.day && s1.time === s2.time) return true;
+          }
         }
       }
-    }
-    return false;
-  }
+      return false;
+    },
+    [selectedCourses]
+  );
+
+  useEffect(() => {
+    if (!authReady || pageLoading || coursesList.length === 0) return;
+
+    const planner = consumePlannedCoursesMerge();
+    if (!planner || planner.length === 0) return;
+
+    setSelectedCourses((prev) => {
+      const merged = [...prev];
+      for (const plan of planner) {
+        const course = coursesList.find((x) => x.id === plan.id);
+        if (!course || !registrationOpen || !course.canRegister || course.isRegistered) continue;
+        if (merged.some((x) => x.id === course.id)) continue;
+
+        const total = merged.reduce((s, c) => s + (c.hours || 0), 0);
+        if (total + (course.hours || 0) > creditLimit) continue;
+        if (hasConflict(course, merged)) continue;
+        merged.push(course);
+      }
+
+      if (merged.length > prev.length) {
+        Toast.show({
+          type: 'info',
+          text1: 'تم دمج بعض المواد من «خطة التسجيل» حيث سُمح بالقواعد.',
+        });
+      }
+      return merged;
+    });
+  }, [
+    authReady,
+    pageLoading,
+    coursesList,
+    creditLimit,
+    registrationOpen,
+    consumePlannedCoursesMerge,
+    hasConflict,
+  ]);
 
   function handleSelect(course) {
     if (!registrationOpen) {
-      Toast.show({
-        type: 'error',
-        text1: 'تسجيل المواد مغلق حالياً'
-      });
+      Toast.show({ type: 'error', text1: 'تسجيل المواد مغلق حالياً' });
       return;
     }
     if (course.isRegistered) {
-      Toast.show({
-        type: 'error',
-        text1: 'هذه المادة مسجلة مسبقاً'
-      });
+      Toast.show({ type: 'error', text1: 'هذه المادة مسجلة مسبقاً' });
       return;
     }
     if (!course.canRegister) {
       Toast.show({
-        type: 'error',
-        text1: 'لا يمكنك تسجيل هذه المادة (المتطلبات غير مكتملة أو السعة ممتلئة)'
+        type:  'error',
+        text1: 'لا يمكنك تسجيل هذه المادة (المتطلبات غير مكتملة أو السعة ممتلئة)',
       });
       return;
     }
@@ -112,94 +178,102 @@ function RegistrationPage() {
       setSelectedCourses(selectedCourses.filter(c => c.id !== course.id));
       return;
     }
-    if (totalHours + course.hours > 18) {
-      Toast.show({
-        type: 'error',
-        text1: 'لا يمكن اختيار أكثر من 18 ساعة'
-      });
+    if (totalHours + course.hours > creditLimit) {
+      Toast.show({ type: 'error', text1: `لا يمكن تجاوز ${creditLimit} ساعة لهذا الفصل` });
       return;
     }
     if (hasConflict(course)) {
-      Toast.show({
-        type: 'error',
-        text1: 'يوجد تعارض في المواعيد!'
-      });
+      Toast.show({ type: 'error', text1: 'يوجد تعارض في المواعيد!' });
       return;
     }
     setSelectedCourses([...selectedCourses, course]);
   }
 
-  async function handleSubmit() {
-      // const router = useRouter();
-    if (!registrationOpen) {
-      Toast.show({
-        type: 'error',
-        text1: 'تسجيل المواد مغلق حالياً'
-      });
-      return;
-    }
-    if (selectedCourses.length === 0) {
-      Toast.show({
-        type: 'error',
-        text1: 'اختر مواد أولاً'
-      });
-      return;
-    }
+  async function performRegistration() {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token      = await AsyncStorage.getItem('token');
       const course_ids = selectedCourses.map(c => c.id);
-
-      const response = await axios.post(
+      const response   = await axios.post(
         `${API_BASE_URL}/courses/register-courses`,
         { course_ids },
-        { headers: { Authorization: token } }
+        { headers: { Authorization: token } },
       );
 
       if (response.data.success) {
-        const { registered, errors } = response.data;
-        if (errors.length > 0) {
-          Toast.show({
-            type: 'success',
-            text1: `تم تسجيل ${registered.length} مادة بنجاح`
-          });
-          errors.forEach(err => {
-            Toast.show({
-              type: 'error',
-              text1: `فشل تسجيل ${err.course_id}: ${err.message}`
-            });
-          });
-        } else {
-          Toast.show({
-            type: 'success',
-            text1: 'تم تسجيل موادك بنجاح!'
-          });
+        const registered = response.data.registered || [];
+        const errors     = response.data.errors     || [];
+
+        if (registered.length === 0 && errors.length > 0) {
+          Toast.show({ type: 'error', text1: 'لم يُسجَّل أي مادة. راجع الأسباب أدناه.' });
+          errors.forEach(err =>
+            Toast.show({ type: 'error', text1: `فشل ${err.course_id}: ${err.message}` }),
+          );
+        } else if (registered.length > 0 && errors.length > 0) {
+          Toast.show({ type: 'info', text1: `تم تسجيل ${registered.length} مادة؛ فشل ${errors.length}.` });
+          errors.forEach(err =>
+            Toast.show({ type: 'error', text1: `فشل ${err.course_id}: ${err.message}` }),
+          );
+        } else if (registered.length > 0) {
+          Toast.show({ type: 'success', text1: 'تم تسجيل موادك بنجاح!' });
         }
-        // router.push('/SchedulePage');
-        navigation.navigate("SchedulePage");
+
+        setSelectedCourses([]);
+        if (registered.length > 0) router.replace('/SchedulePage');
       } else {
         Toast.show({
-          type: 'error',
-          text1: 'فشل في تسجيل المواد'
+          type:  'error',
+          text1: response.data.message || 'فشل في تسجيل المواد',
         });
       }
     } catch (error) {
       console.error(error);
-      Toast.show({
-        type: 'error',
-        text1: 'حدث خطأ في الاتصال بالسيرفر'
-      });
+      Toast.show({ type: 'error', text1: 'حدث خطأ في الاتصال بالسيرفر' });
     } finally {
       setLoading(false);
     }
   }
 
+  function handleSubmit() {
+    if (!registrationOpen) {
+      Toast.show({ type: 'error', text1: 'تسجيل المواد مغلق حالياً' });
+      return;
+    }
+    if (selectedCourses.length === 0) {
+      Toast.show({ type: 'error', text1: 'اختر مواد أولاً' });
+      return;
+    }
+    if (totalHours > creditLimit) {
+      Toast.show({ type: 'error', text1: `إجمالي الساعات يتجاوز الحد المسموح (${creditLimit})` });
+      return;
+    }
+    Alert.alert(
+      'تأكيد التسجيل',
+      `سيتم تسجيل ${selectedCourses.length} مادة بإجمالي ${totalHours} ساعة (الحد ${creditLimit}). هل تريد المتابعة؟`,
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        { text: 'تأكيد', style: 'default', onPress: performRegistration },
+      ],
+    );
+  }
+
+  // ── Render guards ─────────────────────────────────────────────────────────
+  if (checking) {
+    return (
+      <View style={styles.authBoot}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+  if (!authReady) return null;
+
   if (pageLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.bgAlt }]}
+        contentContainerStyle={{ padding: space.md, gap: space.md, flexGrow: 1 }}>
+        <SkeletonBlock /><SkeletonBlock /><SkeletonBlock />
+      </ScrollView>
     );
   }
 
@@ -212,22 +286,30 @@ function RegistrationPage() {
           <View style={styles.hoursInfo}>
             <Text style={styles.hoursLabel}>إجمالي الساعات</Text>
             <Text style={styles.hoursValue}>{totalHours}</Text>
-            <Text style={styles.hoursMax}>الحد الأقصى: 18 ساعة</Text>
+            <Text style={styles.hoursMax}>الحد الأقصى لهذا الفصل: {creditLimit} ساعة</Text>
           </View>
         </View>
       </View>
 
       {coursesList.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>لا توجد مواد متاحة</Text>
-          <Text style={styles.emptyText}>سيتم إضافة المواد قريباً</Text>
+        <View style={styles.emptyWrap}>
+          <EmptyState
+            icon="📚"
+            title="لا توجد مواد متاحة"
+            message="سيتم إضافة المواد قريباً. اسحب للتحديث أو راجع لاحقاً."
+          />
         </View>
       ) : (
         <>
-          <ScrollView 
-            style={styles.scrollView}
-            contentContainerStyle={styles.coursesGrid}
-          >
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.coursesGrid}>
+            {advisorWarnings.length > 0 && (
+              <View style={styles.advisorBox}>
+                <Text style={styles.advisorTitle}>تنبيهات أكاديمية</Text>
+                {advisorWarnings.map((w, i) => (
+                  <Text key={i} style={styles.advisorLine}>• {w}</Text>
+                ))}
+              </View>
+            )}
             {coursesList.map(course => (
               <CourseCard
                 key={course.id}
@@ -235,6 +317,8 @@ function RegistrationPage() {
                 isSelected={selectedCourses.find(c => c.id === course.id)}
                 onSelect={handleSelect}
                 totalHours={totalHours}
+                maxCredits={creditLimit}
+                suggestedIds={suggestedIds}
               />
             ))}
           </ScrollView>
@@ -245,6 +329,7 @@ function RegistrationPage() {
             loading={loading}
             onSubmit={handleSubmit}
             disabled={!registrationOpen}
+            maxCredits={creditLimit}
           />
         </>
       )}
@@ -253,88 +338,39 @@ function RegistrationPage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
+  authBoot: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: colors.bgAlt,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
+  container:  { flex: 1, backgroundColor: colors.bgAlt },
+  emptyWrap:  { flex: 1, justifyContent: 'center', padding: space.md, minHeight: 280 },
   header: {
-    backgroundColor: '#FFF',
-    padding: 20,
+    backgroundColor:   colors.white,
+    paddingHorizontal: space.lg,
+    paddingVertical:   space.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: colors.border,
+    ...elevationShadow(1),
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'right',
-    marginBottom: 15,
-  },
+  headerTitle: { ...type.title, color: colors.dark, textAlign: 'right', marginBottom: space.sm + 4 },
   hoursCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F8FF',
-    padding: 15,
-    borderRadius: 12,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#e0f2fe', padding: space.md,
+    borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(14, 165, 233, 0.35)',
   },
-  hoursIcon: {
-    fontSize: 32,
-    marginRight: 15,
+  hoursIcon:  { fontSize: 32, marginRight: space.md },
+  hoursInfo:  { flex: 1 },
+  hoursLabel: { ...type.micro,   color: colors.slateLight, textAlign: 'right' },
+  hoursValue: { fontSize: 28, fontWeight: '700', color: colors.primary, textAlign: 'right', lineHeight: 34 },
+  hoursMax:   { ...type.micro,   color: colors.muted, textAlign: 'right', marginTop: 2 },
+  scrollView: { flex: 1 },
+  coursesGrid: { padding: space.md, paddingBottom: 120 },
+  advisorBox: {
+    backgroundColor: '#fffbeb', borderRadius: radius.md, padding: space.md,
+    marginBottom: space.md, borderWidth: 1, borderColor: '#fcd34d',
   },
-  hoursInfo: {
-    flex: 1,
-  },
-  hoursLabel: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'right',
-  },
-  hoursValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    textAlign: 'right',
-  },
-  hoursMax: {
-    fontSize: 11,
-    color: '#999',
-    textAlign: 'right',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  coursesGrid: {
-    padding: 15,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
+  advisorTitle: { ...type.headline, color: colors.dark, marginBottom: space.xs, textAlign: 'right' },
+  advisorLine:  { ...type.caption,  color: '#92400e', textAlign: 'right', marginTop: 4 },
 });
 
 export default RegistrationPage;

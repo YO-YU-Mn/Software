@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 
-function RegistrationFooter({ selectedCourses, totalHours, loading, onSubmit, disabled }) {
+function RegistrationFooter({ selectedCourses, totalHours, loading, onSubmit, disabled, maxCredits = 18 }) {
   return (
     <View style={styles.registrationFooter}>
       <View style={styles.selectedSummary}>
@@ -9,7 +9,7 @@ function RegistrationFooter({ selectedCourses, totalHours, loading, onSubmit, di
           <Text style={styles.countLabel}>Selected Subjects</Text>
         </View>
         <View style={styles.totalHoursFooter}>
-          <Text style={styles.hoursText}>Total Hours: {totalHours}/18</Text>
+          <Text style={styles.hoursText}>Total Hours: {totalHours}/{maxCredits}</Text>
         </View>
       </View>
 

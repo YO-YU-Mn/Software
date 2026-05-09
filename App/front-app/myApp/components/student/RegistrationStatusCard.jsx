@@ -1,128 +1,131 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { View, Text, StyleSheet } from "react-native";
 import { useRouter } from 'expo-router';
+import { PressableScale } from '@/components/ui/PressableScale';
+import { SecondaryButton } from '@/components/ui/PrimaryButton';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { colors, space, radius, type, elevationShadow, touchTargetMin } from '@/constants/designTokens';
 
-function RegistrationStatusCard({ status }) {
-  const navigation = useNavigation();
+function RegistrationStatusCard({ status, loading }) {
   const isOpen = status === "open";
+  const router = useRouter();
 
-  const router = useRouter(); 
-  
-    async function handleLogin(event) {
-      console.log("Button Clicked");
-      
-      // الآن يمكنك استخدام الـ router هنا
-      router.push("/RegistrationPage"); 
-    }
-    async function loginAi(event) {
-      console.log("Button Clicked");
-      
-      // الآن يمكنك استخدام الـ router هنا
-      router.push("/CourseRegistrationWithAi"); 
-    }
+  function goRegister() {
+    router.push("/RegistrationPage");
+  }
+
+  function goAiRegister() {
+    router.push("/CourseRegistrationWithAi");
+  }
 
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>حالة تسجيل المقررات</Text>
 
-      <View style={[styles.statusBadge, isOpen ? styles.statusOpen : styles.statusClosed]}>
-        <Text style={[styles.statusText, isOpen ? styles.statusOpenText : styles.statusClosedText]}>
-          {isOpen ? "التسجيل مفتوح" : "التسجيل مغلق"}
-        </Text>
-      </View>8
+      {loading ? (
+        <View style={styles.statusSkeleton} accessibilityLabel="جاري تحميل حالة التسجيل">
+          <Skeleton width={180} height={36} borderRadius={radius.pill} />
+        </View>
+      ) : (
+        <View style={[styles.statusBadge, isOpen ? styles.statusOpen : styles.statusClosed]}>
+          <Text style={[styles.statusText, isOpen ? styles.statusOpenText : styles.statusClosedText]}>
+            {isOpen ? "التسجيل مفتوح" : "التسجيل مغلق"}
+          </Text>
+        </View>
+      )}
 
-      <TouchableOpacity
-        style={[styles.button, !isOpen && styles.buttonDisabled]}
-        disabled={!isOpen}
-        onPress={handleLogin}
-      >
-        <Text style={styles.buttonText}>تسجيل المقررات للفصل الحالي</Text>
-      </TouchableOpacity>
+      <PressableScale
+        onPress={goRegister}
+        disabled={!isOpen || loading}
+        style={[styles.primaryCta, (!isOpen || loading) && styles.primaryCtaDisabled]}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !isOpen || loading }}
+        accessibilityLabel="تسجيل المقررات للفصل الحالي">
+        <Text style={styles.primaryCtaText}>تسجيل المقررات للفصل الحالي</Text>
+      </PressableScale>
 
-      <TouchableOpacity style={styles.button} onPress={loginAi}>
-                      <Text style={styles.buttonText}>Login With generation Ai</Text>
-      </TouchableOpacity>
-
+      <SecondaryButton title="تسجيل بمساعدة الذكاء الاصطناعي" onPress={goAiRegister} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 22,
-    alignItems: "center",
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: space.lg,
+    alignItems: "stretch",
     borderWidth: 1,
     borderColor: "rgba(203,213,225,0.4)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.10,
-    shadowRadius: 16,
-    elevation: 4,
+    ...elevationShadow(2),
+    gap: space.sm,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#0f172a",
-    marginBottom: 16,
-    paddingBottom: 12,
+    ...type.headline,
+    color: colors.dark,
+    marginBottom: space.sm,
+    paddingBottom: space.sm,
     borderBottomWidth: 2,
     borderBottomColor: "rgba(37,99,235,0.2)",
     width: "100%",
     textAlign: "right",
   },
+  statusSkeleton: {
+    alignItems: "center",
+    marginVertical: space.md,
+    minHeight: 44,
+    justifyContent: "center",
+  },
   statusBadge: {
-    paddingVertical: 8,
-    paddingHorizontal: 28,
-    borderRadius: 40,
-    marginVertical: 14,
+    paddingVertical: space.xs,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.pill,
+    marginVertical: space.sm,
     borderWidth: 1,
+    alignSelf: "center",
+    minHeight: touchTargetMin,
+    justifyContent: "center",
   },
   statusOpen: {
-    backgroundColor: "#d1fae5",
-    borderColor: "#a7f3d0",
+    backgroundColor: colors.successBg,
+    borderColor: colors.successBorder,
   },
   statusClosed: {
-    backgroundColor: "#fee2e2",
-    borderColor: "#fecaca",
+    backgroundColor: colors.dangerBg,
+    borderColor: colors.dangerBorder,
   },
   statusText: {
-    fontSize: 15,
+    ...type.callout,
     fontWeight: "700",
-    letterSpacing: 1,
+    letterSpacing: 0.5,
+    textAlign: "center",
   },
   statusOpenText: {
-    color: "#065f46",
+    color: colors.success,
   },
   statusClosedText: {
-    color: "#991b1b",
+    color: colors.dangerDark,
   },
-  button: {
-    backgroundColor: "#2563eb",
-    borderRadius: 40,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    width: "100%",
-    maxWidth: 300,
+  primaryCta: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
     alignItems: "center",
-    shadowColor: "#2563eb",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.30,
-    shadowRadius: 12,
-    elevation: 4,
-    marginTop: 8,
+    justifyContent: "center",
+    minHeight: touchTargetMin + 4,
+    marginTop: space.xs,
+    ...elevationShadow(2),
   },
-  buttonDisabled: {
-    backgroundColor: "#94a3b8",
-    shadowOpacity: 0,
+  primaryCtaDisabled: {
+    backgroundColor: colors.muted,
+    opacity: 0.85,
     elevation: 0,
-    opacity: 0.7,
+    shadowOpacity: 0,
   },
-  buttonText: {
-    color: "#ffffff",
+  primaryCtaText: {
+    ...type.callout,
+    color: colors.white,
     fontWeight: "600",
-    fontSize: 15,
     textAlign: "center",
   },
 });

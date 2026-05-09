@@ -1,988 +1,440 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
-  Modal,
-  ActivityIndicator,
   StyleSheet,
-  I18nManager,
-  SafeAreaView,
-  FlatList,
+  TouchableOpacity,
   Alert,
-} from "react-native";
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
+import CourseCard from '../../components/student/CourseCard';
+import RegistrationFooter from '../../components/student/RegistrationFooter';
+import { API_BASE_URL } from '../../config';
+import {
+  colors,
+  space,
+  radius,
+  type,
+  elevationShadow,
+} from '@/constants/designTokens';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useProtectedBackToLogin } from '@/hooks/useProtectedBackToLogin';
+import { useAuth } from '@/contexts/AuthContext';
 
-// ─── Force RTL ───────────────────────────────────────────────────────────────
-I18nManager.forceRTL(true);
+const DRAFT_IDS_KEY = '@ai_registration_draft_ids_v1';
 
-// ─── Theme ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: "#f5f4f0",
-  surface: "#ffffff",
-  surface2: "#f0eeea",
-  border: "rgba(0,0,0,0.1)",
-  border2: "rgba(0,0,0,0.2)",
-  text: "#1a1a1a",
-  text2: "#5a5a5a",
-  text3: "#9a9a9a",
-  accent: "#534AB7",
-  accentLight: "#EEEDFE",
-  accentDark: "#3C3489",
-  green: "#27500A",
-  greenBg: "#EAF3DE",
-  blue: "#0C447C",
-  blueBg: "#E6F1FB",
-  amber: "#633806",
-  amberBg: "#FAEEDA",
-  error: "#A32D2D",
-};
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-const COURSES = [
-  {
-    code: "CS301",
-    name: "هياكل البيانات والخوارزميات",
-    dept: "CS",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["8:00 ص — 10:00 ص", "12:00 م — 2:00 م"] },
-      { day: "الثلاثاء", times: ["8:00 ص — 10:00 ص", "12:00 م — 2:00 م"] },
-    ],
-  },
-  {
-    code: "CS302",
-    name: "قواعد البيانات",
-    dept: "CS",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الاثنين", times: ["10:00 ص — 12:00 م", "2:00 م — 4:00 م"] },
-      { day: "الأربعاء", times: ["10:00 ص — 12:00 م", "2:00 م — 4:00 م"] },
-    ],
-  },
-  {
-    code: "CS303",
-    name: "الشبكات والاتصالات",
-    dept: "CS",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["10:00 ص — 12:00 م", "3:00 م — 5:00 م"] },
-      { day: "الثلاثاء", times: ["10:00 ص — 12:00 م", "3:00 م — 5:00 م"] },
-    ],
-  },
-  {
-    code: "CS401",
-    name: "الذكاء الاصطناعي",
-    dept: "CS",
-    hours: 3,
-    type: "اختياري",
-    slots: [
-      { day: "الاثنين", times: ["8:00 ص — 10:00 ص", "4:00 م — 6:00 م"] },
-      { day: "الأربعاء", times: ["8:00 ص — 10:00 ص", "4:00 م — 6:00 م"] },
-    ],
-  },
-  {
-    code: "CS402",
-    name: "تطوير تطبيقات الويب",
-    dept: "CS",
-    hours: 3,
-    type: "اختياري",
-    slots: [
-      { day: "الثلاثاء", times: ["2:00 م — 4:00 م"] },
-      { day: "الخميس", times: ["2:00 م — 4:00 م"] },
-    ],
-  },
-  {
-    code: "MATH301",
-    name: "الإحصاء والاحتمالات",
-    dept: "MATH",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["12:00 م — 2:00 م", "5:00 م — 7:00 م"] },
-      { day: "الثلاثاء", times: ["12:00 م — 2:00 م", "5:00 م — 7:00 م"] },
-    ],
-  },
-  {
-    code: "MATH302",
-    name: "الجبر الخطي",
-    dept: "MATH",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الاثنين", times: ["8:00 ص — 10:00 ص"] },
-      { day: "الأربعاء", times: ["8:00 ص — 10:00 ص"] },
-    ],
-  },
-  {
-    code: "ENG301",
-    name: "أنظمة التشغيل",
-    dept: "ENG",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الأحد", times: ["2:00 م — 4:00 م"] },
-      { day: "الثلاثاء", times: ["2:00 م — 4:00 م"] },
-    ],
-  },
-  {
-    code: "ENG302",
-    name: "معمارية الحاسب",
-    dept: "ENG",
-    hours: 3,
-    type: "إجباري",
-    slots: [
-      { day: "الاثنين", times: ["12:00 م — 2:00 م", "4:00 م — 6:00 م"] },
-      { day: "الأربعاء", times: ["12:00 م — 2:00 م", "4:00 م — 6:00 م"] },
-    ],
-  },
-  {
-    code: "ENG401",
-    name: "معالجة الإشارات الرقمية",
-    dept: "ENG",
-    hours: 3,
-    type: "اختياري",
-    slots: [
-      { day: "الخميس", times: ["10:00 ص — 12:00 م", "3:00 م — 5:00 م"] },
-    ],
-  },
-];
-
-const FILTERS = [
-  { key: "all", label: "الكل" },
-  { key: "إجباري", label: "إجباري" },
-  { key: "اختياري", label: "اختياري" },
-  { key: "CS", label: "علم الحاسب" },
-  { key: "MATH", label: "رياضيات" },
-  { key: "ENG", label: "هندسة" },
-];
-
-const PREFS = [
-  { key: "صباحي", icon: "🌅", label: "صباحي", desc: "من 8 ص حتى 12 م" },
-  { key: "متوسط", icon: "🌤️", label: "متوسط", desc: "من 10 ص حتى 3 م" },
-  { key: "مسائي", icon: "🌆", label: "مسائي", desc: "من 2 م حتى 8 م" },
-];
-
-const ANTHROPIC_API_KEY = "YOUR_API_KEY_HERE"; // ← ضع مفتاحك هنا
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-type Course = (typeof COURSES)[0];
-type ScheduleItem = {
-  code: string;
+type ApiCourse = {
+  id: string;
   name: string;
   hours: number;
-  day: string;
-  time: string;
+  instructor?: string;
+  schedule?: { day: string; time: string; location?: string }[];
+  canRegister: boolean;
+  isRegistered: boolean;
+  prerequisitesMet?: boolean;
+  hasCapacity?: boolean;
+  blockReasons?: string[];
 };
-type ScheduleResult = { schedule: ScheduleItem[]; notes?: string };
-type ResultState =
-  | { type: "idle" }
-  | { type: "pref" }
-  | { type: "loading" }
-  | { type: "result"; data: ScheduleResult; pref: string }
-  | { type: "error"; message: string };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
-export default function CourseRegistrationApp() {
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [modalCourse, setModalCourse] = useState<Course | null>(null);
-  const [chosenPref, setChosenPref] = useState<string | null>(null);
-  const [result, setResult] = useState<ResultState>({ type: "idle" });
+export default function CourseRegistrationWithAi() {
+  const router = useRouter();
+  const { refreshKey } = useAuth();
+  const { authReady, checking } = useRequireAuth();
+  useProtectedBackToLogin();
+  const [coursesList, setCoursesList] = useState<ApiCourse[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<ApiCourse[]>([]);
+  const [creditLimit, setCreditLimit] = useState(18);
+  const [suggestedIds, setSuggestedIds] = useState<string[]>([]);
+  const [advisorWarnings, setAdvisorWarnings] = useState<string[]>([]);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const isInitialLoadRef = useRef(true);
 
-  const filtered = COURSES.filter((c) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "إجباري" || activeFilter === "اختياري")
-      return c.type === activeFilter;
-    return c.dept === activeFilter;
-  });
+  const totalHours = selectedCourses.reduce((s, c) => s + (c.hours || 0), 0);
 
-  const totalHours = [...selected].reduce((sum, code) => {
-    const c = COURSES.find((x) => x.code === code);
-    return sum + (c ? c.hours : 0);
-  }, 0);
-
-  const toggleCourse = (code: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
-      return next;
-    });
-  };
-
-  const generateSchedule = async (pref: string) => {
-    setResult({ type: "loading" });
-    const selectedCourses = [...selected].map((code) =>
-      COURSES.find((c) => c.code === code)!
-    );
-    const coursesList = selectedCourses
-      .map((c) => {
-        const slotsDesc = c.slots
-          .map((s) => s.day + ": " + s.times.join(" أو "))
-          .join(" | ");
-        return `- ${c.name} (${c.code}) | ${c.hours} ساعات | ${c.type} | المواعيد المتاحة: ${slotsDesc}`;
-      })
-      .join("\n");
-
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [
-            {
-              role: "user",
-              content: `أنت مساعد أكاديمي. الطالب اختار هذه المقررات وتفضيله للجدول هو: ${pref}.
-
-المقررات المختارة ومواعيدها المتاحة:
-${coursesList}
-
-المطلوب: اختر لكل مادة الموعد الأنسب من المواعيد المتاحة بما يتوافق مع التفضيل "${pref}" وبدون أي تعارض في المواعيد.
-
-أجب فقط بـ JSON بهذا الشكل بدون أي نص إضافي أو backticks:
-{"schedule":[{"code":"...","name":"...","hours":0,"day":"...","time":"..."}],"notes":"..."}`,
-            },
-          ],
-        }),
-      });
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-      const text = data.content.map((i: any) => i.text || "").join("");
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed: ScheduleResult = JSON.parse(clean);
-      setResult({ type: "result", data: parsed, pref });
-    } catch (e: any) {
-      setResult({ type: "error", message: e.message });
+  const loadData = useCallback(async () => {
+    void refreshKey; // bust deps after login; value unused inside fetch
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      setPageLoading(false);
+      return;
     }
-  };
+    if (!isInitialLoadRef.current) {
+      setRefreshing(true);
+    }
+    try {
+      const [statusRes, advisorRes, coursesRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/settings/status`, {
+          headers: { Authorization: token },
+        }),
+        axios.get(`${API_BASE_URL}/courses/advisor-summary`, {
+          headers: { Authorization: token },
+        }),
+        axios.get(`${API_BASE_URL}/courses/available-courses`, {
+          headers: { Authorization: token },
+        }),
+      ]);
 
-  return (
-    <SafeAreaView style={s.safeArea}>
-      <ScrollView
-        style={s.scroll}
-        contentContainerStyle={s.container}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={s.header}>
-          <Text style={s.headerTitle}>تسجيل مقررات الترم الحالي</Text>
-          <Text style={s.headerSub}>
-            اختر المقررات، شوف المواعيد، ثم اضغط Generate لإنشاء جدولك بالذكاء
-            الاصطناعي
-          </Text>
-        </View>
+      setRegistrationOpen(!!statusRes.data.registrationOpen);
+      if (typeof advisorRes.data.effectiveMaxCredits === 'number') {
+        setCreditLimit(advisorRes.data.effectiveMaxCredits);
+      }
+      setAdvisorWarnings(advisorRes.data.warnings || []);
+      setSuggestedIds(advisorRes.data.suggestedCourseIds || []);
 
-        {/* Student Info */}
-        <View style={s.infoRow}>
-          <InfoCard label="اسم الطالب" value="أحمد محمد علي" />
-          <InfoCard label="الرقم الجامعي" value="20210045" />
-          <InfoCard
-            label="الساعات / المسموح"
-            value={`${totalHours} / 18 ساعة`}
-          />
-        </View>
+      const list: ApiCourse[] = coursesRes.data || [];
+      setCoursesList(list);
 
-        {/* Section Title */}
-        <Text style={s.sectionTitle}>مقررات الترم الحالي</Text>
+      const rawDraft = await AsyncStorage.getItem(DRAFT_IDS_KEY);
+      if (rawDraft) {
+        const ids: string[] = JSON.parse(rawDraft);
+        const picked = list.filter((c) => ids.includes(c.id));
+        setSelectedCourses(picked);
+      }
+    } catch (e) {
+      console.error(e);
+      Toast.show({ type: 'error', text1: 'فشل تحميل بيانات التسجيل' });
+    } finally {
+      isInitialLoadRef.current = false;
+      setPageLoading(false);
+      setRefreshing(false);
+    }
+  }, [refreshKey]);
 
-        {/* Filters */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={s.filterScroll}
-          contentContainerStyle={s.filterRow}
-        >
-          {FILTERS.map((f) => (
-            <TouchableOpacity
-              key={f.key}
-              onPress={() => setActiveFilter(f.key)}
-              style={[s.filterBtn, activeFilter === f.key && s.filterBtnActive]}
-            >
-              <Text
-                style={[
-                  s.filterBtnText,
-                  activeFilter === f.key && s.filterBtnTextActive,
-                ]}
-              >
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Course Cards */}
-        <View style={s.coursesGrid}>
-          {filtered.map((course) => (
-            <CourseCard
-              key={course.code}
-              course={course}
-              isSelected={selected.has(course.code)}
-              onToggle={() => toggleCourse(course.code)}
-              onSchedule={() => setModalCourse(course)}
-            />
-          ))}
-        </View>
-
-        {/* Summary Bar */}
-        <View style={s.summaryBar}>
-          <View style={s.summaryStats}>
-            <View style={s.stat}>
-              <Text style={s.statNum}>{selected.size}</Text>
-              <Text style={s.statLabel}>مقرر مختار</Text>
-            </View>
-            <View style={s.stat}>
-              <Text style={s.statNum}>{totalHours}</Text>
-              <Text style={s.statLabel}>ساعة معتمدة</Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={[s.generateBtn, selected.size === 0 && s.generateBtnDisabled]}
-            onPress={() => {
-              if (selected.size === 0) return;
-              setChosenPref(null);
-              setResult({ type: "pref" });
-            }}
-            disabled={selected.size === 0}
-          >
-            <Text style={[s.generateBtnText, selected.size === 0 && s.generateBtnTextDisabled]}>
-              ⚡ Generate جدولك
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Result Area */}
-        <Text style={s.sectionTitle}>الجدول الدراسي المقترح</Text>
-        <View style={s.resultArea}>
-          <ResultArea
-            state={result}
-            chosenPref={chosenPref}
-            setChosenPref={setChosenPref}
-            onConfirm={() => chosenPref && generateSchedule(chosenPref)}
-            onRetry={() => {
-              setChosenPref(null);
-              setResult({ type: "pref" });
-            }}
-          />
-        </View>
-      </ScrollView>
-
-      {/* Schedule Modal */}
-      <Modal
-        visible={modalCourse !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalCourse(null)}
-      >
-        <TouchableOpacity
-          style={s.overlay}
-          activeOpacity={1}
-          onPress={() => setModalCourse(null)}
-        >
-          <TouchableOpacity activeOpacity={1} style={s.modal}>
-            {modalCourse && (
-              <>
-                <View style={s.modalHeader}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.modalTitle}>{modalCourse.name}</Text>
-                    <Text style={s.modalSubtitle}>
-                      {modalCourse.code} — {modalCourse.hours} ساعات —{" "}
-                      {modalCourse.type}
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setModalCourse(null)}>
-                    <Text style={s.modalClose}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-                <ScrollView>
-                  {modalCourse.slots.length === 0 ? (
-                    <Text style={s.noSlots}>لا توجد مواعيد متاحة حالياً</Text>
-                  ) : (
-                    modalCourse.slots.map((slot, i) => (
-                      <View key={i} style={s.slotGroup}>
-                        <Text style={s.slotDay}>{slot.day}</Text>
-                        {slot.times.map((t, j) => (
-                          <View key={j} style={s.slotTime}>
-                            <Text style={s.slotTimeText}>{t}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    ))
-                  )}
-                </ScrollView>
-              </>
-            )}
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
-    </SafeAreaView>
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
   );
-}
 
-// ─── Sub-Components ───────────────────────────────────────────────────────────
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={s.infoCard}>
-      <Text style={s.infoLabel}>{label}</Text>
-      <Text style={s.infoValue}>{value}</Text>
-    </View>
-  );
-}
+  useEffect(() => {
+    if (pageLoading) return;
+    const ids = selectedCourses.map((c) => c.id);
+    AsyncStorage.setItem(DRAFT_IDS_KEY, JSON.stringify(ids)).catch(() => {});
+  }, [selectedCourses, pageLoading]);
 
-function CourseCard({
-  course,
-  isSelected,
-  onToggle,
-  onSchedule,
-}: {
-  course: Course;
-  isSelected: boolean;
-  onToggle: () => void;
-  onSchedule: () => void;
-}) {
-  return (
-    <View style={[s.courseCard, isSelected && s.courseCardSelected]}>
-      <View style={s.cardTop}>
-        <Text style={s.courseCode}>{course.code}</Text>
-        <TouchableOpacity
-          onPress={onToggle}
-          style={[s.selectToggle, isSelected && s.selectToggleChecked]}
-        >
-          {isSelected && <Text style={{ color: "#fff", fontSize: 11 }}>✓</Text>}
-        </TouchableOpacity>
-      </View>
-      <Text style={[s.courseName, isSelected && s.courseNameSelected]}>
-        {course.name}
-      </Text>
-      <View style={s.courseMeta}>
-        <View style={[s.badge, s.badgeDept]}>
-          <Text style={[s.badgeText, { color: C.blue }]}>{course.dept}</Text>
-        </View>
-        <View style={[s.badge, s.badgeHours]}>
-          <Text style={[s.badgeText, { color: C.green }]}>
-            {course.hours} ساعات
-          </Text>
-        </View>
-        <View style={[s.badge, s.badgeType]}>
-          <Text style={[s.badgeText, { color: C.amber }]}>{course.type}</Text>
-        </View>
-      </View>
-      <View style={s.cardActions}>
-        <TouchableOpacity
-          onPress={onToggle}
-          style={[s.btnSelect, isSelected && s.btnSelectActive]}
-        >
-          <Text
-            style={[s.btnSelectText, isSelected && s.btnSelectTextActive]}
-          >
-            {isSelected ? "✓ تم الاختيار" : "+ اختيار"}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onSchedule} style={s.btnSchedule}>
-          <Text style={s.btnScheduleText}>📅 المواعيد</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+  function hasConflict(course: ApiCourse) {
+    if (!course.schedule) return false;
+    for (const sel of selectedCourses) {
+      if (!sel.schedule) continue;
+      for (const s1 of sel.schedule) {
+        for (const s2 of course.schedule) {
+          if (s1.day === s2.day && s1.time === s2.time) return true;
+        }
+      }
+    }
+    return false;
+  }
 
-function ResultArea({
-  state,
-  chosenPref,
-  setChosenPref,
-  onConfirm,
-  onRetry,
-}: {
-  state: ResultState;
-  chosenPref: string | null;
-  setChosenPref: (p: string) => void;
-  onConfirm: () => void;
-  onRetry: () => void;
-}) {
-  if (state.type === "idle") {
-    return (
-      <Text style={s.placeholder}>
-        اختر المقررات التي تريدها ثم اضغط Generate
-      </Text>
+  function addOrToggleCourse(course: ApiCourse) {
+    if (!registrationOpen) {
+      Toast.show({ type: 'error', text1: 'تسجيل المواد مغلق حالياً' });
+      return;
+    }
+    if (course.isRegistered) {
+      Toast.show({ type: 'error', text1: 'المادة مسجّلة مسبقاً' });
+      return;
+    }
+    if (!course.canRegister) {
+      Toast.show({
+        type: 'error',
+        text1: 'غير متاحة للتسجيل (متطلبات / سعة / المعدل)',
+      });
+      return;
+    }
+    const existing = selectedCourses.find((c) => c.id === course.id);
+    if (existing) {
+      setSelectedCourses(selectedCourses.filter((c) => c.id !== course.id));
+      return;
+    }
+    if (totalHours + course.hours > creditLimit) {
+      Toast.show({
+        type: 'error',
+        text1: `تجاوز حد الساعات (${creditLimit})`,
+      });
+      return;
+    }
+    if (hasConflict(course)) {
+      Toast.show({ type: 'error', text1: 'تعارض في المواعيد' });
+      return;
+    }
+    setSelectedCourses([...selectedCourses, course]);
+  }
+
+  async function performRegistration() {
+    setSubmitLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const course_ids = selectedCourses.map((c) => c.id);
+      const response = await axios.post(
+        `${API_BASE_URL}/courses/register-courses`,
+        { course_ids },
+        { headers: { Authorization: token } }
+      );
+
+      if (response.data.success) {
+        const registered = response.data.registered || [];
+        const errors = response.data.errors || [];
+
+        if (registered.length === 0 && errors.length > 0) {
+          Toast.show({
+            type: 'error',
+            text1: 'لم يُسجَّل أي مادة.',
+          });
+          errors.forEach((err: { course_id: string; message: string }) => {
+            Toast.show({
+              type: 'error',
+              text1: `فشل ${err.course_id}: ${err.message}`,
+            });
+          });
+          return;
+        }
+
+        if (registered.length > 0 && errors.length > 0) {
+          Toast.show({
+            type: 'info',
+            text1: `تم تسجيل ${registered.length} مادة؛ فشل ${errors.length}.`,
+          });
+          errors.forEach((err: { course_id: string; message: string }) => {
+            Toast.show({
+              type: 'error',
+              text1: `فشل ${err.course_id}: ${err.message}`,
+            });
+          });
+        } else if (registered.length > 0) {
+          Toast.show({ type: 'success', text1: 'تم تسجيل موادك بنجاح!' });
+        }
+
+        await AsyncStorage.removeItem(DRAFT_IDS_KEY);
+        setSelectedCourses([]);
+        if (registered.length > 0) {
+          router.replace('/SchedulePage');
+        }
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: response.data.message || 'فشل التسجيل',
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      Toast.show({ type: 'error', text1: 'خطأ في الاتصال' });
+    } finally {
+      setSubmitLoading(false);
+    }
+  }
+
+  function onConfirmPress() {
+    if (!registrationOpen) {
+      Toast.show({ type: 'error', text1: 'التسجيل مغلق' });
+      return;
+    }
+    if (!selectedCourses.length) {
+      Toast.show({ type: 'error', text1: 'اختر مواداً' });
+      return;
+    }
+    if (totalHours > creditLimit) {
+      Toast.show({ type: 'error', text1: `تجاوز الحد ${creditLimit} ساعة` });
+      return;
+    }
+    Alert.alert(
+      'تأكيد التسجيل',
+      `تسجيل ${selectedCourses.length} مادة (${totalHours} ساعة / ${creditLimit}). المتابعة؟`,
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        { text: 'تأكيد', onPress: performRegistration },
+      ]
     );
   }
 
-  if (state.type === "pref") {
+  const suggestedCourses = coursesList.filter((c) => suggestedIds.includes(c.id));
+
+  const eligibleList = coursesList.filter((c) => c.canRegister || c.isRegistered);
+
+  if (checking) {
     return (
-      <View>
-        <Text style={s.prefTitle}>ما هو تفضيلك لمواعيد الجدول؟</Text>
-        <Text style={s.prefSub}>
-          الذكاء الاصطناعي سيختار أفضل المواعيد المتاحة بناءً على اختيارك
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+  if (!authReady) return null;
+
+  if (pageLoading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.muted}>جاري التحميل...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>تسجيل بالمساعد الأكاديمي</Text>
+        <Text style={styles.sub}>
+          بيانات حقيقية من الخادم (المتطلبات، المعدل، السعة، التعارض). المقترحات من
+          واجهة المستشار الأكاديمي فقط دون اختراع مواد.
         </Text>
-        <View style={s.prefOptions}>
-          {PREFS.map((p) => (
-            <TouchableOpacity
-              key={p.key}
-              onPress={() => setChosenPref(p.key)}
-              style={[s.prefCard, chosenPref === p.key && s.prefCardSelected]}
-            >
-              <Text style={s.prefIcon}>{p.icon}</Text>
-              <Text style={s.prefName}>{p.label}</Text>
-              <Text style={s.prefDesc}>{p.desc}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <TouchableOpacity
-          onPress={onConfirm}
-          disabled={!chosenPref}
-          style={[s.prefConfirm, !chosenPref && s.prefConfirmDisabled]}
-        >
-          <Text
-            style={[
-              s.prefConfirmText,
-              !chosenPref && s.prefConfirmTextDisabled,
-            ]}
-          >
-            توليد الجدول ←
+        <View style={styles.metaRow}>
+          <Text style={styles.meta}>
+            الحد: {creditLimit} ساعة · المختار: {totalHours} ساعة
           </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (state.type === "loading") {
-    return (
-      <View style={s.loadingWrap}>
-        <ActivityIndicator size="large" color={C.accent} />
-        <Text style={s.loadingText}>جاري إنشاء الجدول المثالي لك...</Text>
-      </View>
-    );
-  }
-
-  if (state.type === "error") {
-    return (
-      <View style={s.errorWrap}>
-        <Text style={s.errorText}>حصل خطأ: {state.message}</Text>
-        <TouchableOpacity onPress={onRetry} style={s.retryBtn}>
-          <Text style={s.retryBtnText}>↩ حاول تاني</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (state.type === "result") {
-    const totalH = state.data.schedule.reduce((s, c) => s + c.hours, 0);
-    const prefEmoji: Record<string, string> = {
-      صباحي: "🌅",
-      متوسط: "🌤️",
-      مسائي: "🌆",
-    };
-    return (
-      <View>
-        <View style={s.scheduleHeader}>
-          <Text style={s.scheduleHeaderTitle}>
-            الجدول الدراسي — إجمالي {totalH} ساعة
-          </Text>
-          <View style={s.schedulePrefBadge}>
-            <Text style={s.schedulePrefBadgeText}>
-              {prefEmoji[state.pref] || ""} {state.pref}
-            </Text>
-          </View>
         </View>
+      </View>
 
-        {/* Table Header */}
-        <View style={[s.tableRow, s.tableHead]}>
-          {["الكود", "المقرر", "ساعات", "اليوم", "الوقت"].map((h) => (
-            <Text key={h} style={[s.tableCell, s.tableHeadCell]}>
-              {h}
-            </Text>
-          ))}
-        </View>
-        {state.data.schedule.map((item, i) => (
-          <View
-            key={i}
-            style={[s.tableRow, i % 2 === 0 ? s.tableRowEven : s.tableRowOdd]}
-          >
-            <Text style={[s.tableCell, { fontWeight: "700" }]}>
-              {item.code}
-            </Text>
-            <Text style={[s.tableCell, { flex: 2 }]}>{item.name}</Text>
-            <Text style={[s.tableCell, { textAlign: "center" }]}>
-              {item.hours}
-            </Text>
-            <Text style={s.tableCell}>{item.day || "—"}</Text>
-            <Text style={s.tableCell}>{item.time || "—"}</Text>
-          </View>
-        ))}
-
-        {state.data.notes ? (
-          <View style={s.resultNotes}>
-            <Text style={s.resultNotesText}>
-              ملاحظات: {state.data.notes}
-            </Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              loadData();
+            }}
+            tintColor={colors.primary}
+          />
+        }>
+        {advisorWarnings.length > 0 ? (
+          <View style={styles.warnBox}>
+            <Text style={styles.warnTitle}>تنبيهات</Text>
+            {advisorWarnings.map((w, i) => (
+              <Text key={i} style={styles.warnLine}>
+                • {w}
+              </Text>
+            ))}
           </View>
         ) : null}
 
-        <TouchableOpacity onPress={onRetry} style={s.retryBtn}>
-          <Text style={s.retryBtnText}>↩ تغيير التفضيل</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+        {suggestedCourses.length > 0 ? (
+          <View style={styles.suggestSection}>
+            <Text style={styles.sectionTitle}>مقترحات النظام (اضغط للإضافة)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.chipRow}>
+                {suggestedCourses.map((c) => {
+                  const selected = !!selectedCourses.find((x) => x.id === c.id);
+                  return (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={[
+                        styles.chip,
+                        selected && styles.chipOn,
+                        !c.canRegister && styles.chipDisabled,
+                      ]}
+                      onPress={() => addOrToggleCourse(c)}
+                      disabled={!c.canRegister && !selected}>
+                      <Text
+                        style={[
+                          styles.chipText,
+                          selected && styles.chipTextOn,
+                        ]}>
+                        {c.id} · {c.hours}h
+                      </Text>
+                      <Text style={styles.chipName} numberOfLines={2}>
+                        {c.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          </View>
+        ) : null}
 
-  return null;
+        <Text style={styles.sectionTitle}>
+          المواد التي يمكنك التسجيل فيها أو المسجّلة لديك
+        </Text>
+        {eligibleList.length === 0 ? (
+          <Text style={styles.muted}>
+            لا توجد مواد مؤهّل لها في خطتك الحالية. راجع المعدل أو المتطلبات.
+          </Text>
+        ) : null}
+        {eligibleList.map((course) => (
+          <CourseCard
+            key={course.id}
+            course={course}
+            isSelected={!!selectedCourses.find((c) => c.id === course.id)}
+            onSelect={addOrToggleCourse}
+            totalHours={totalHours}
+            maxCredits={creditLimit}
+            suggestedIds={suggestedIds}
+          />
+        ))}
+      </ScrollView>
+
+      <RegistrationFooter
+        selectedCourses={selectedCourses}
+        totalHours={totalHours}
+        loading={submitLoading}
+        onSubmit={onConfirmPress}
+        disabled={!registrationOpen}
+        maxCredits={creditLimit}
+      />
+    </View>
+  );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const s = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: C.bg },
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bgAlt },
+  center: { justifyContent: 'center', alignItems: 'center' },
+  muted: { color: colors.muted, ...type.callout },
+  header: {
+    backgroundColor: colors.white,
+    padding: space.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    ...elevationShadow(1),
+  },
+  title: { ...type.title, color: colors.dark, textAlign: 'right' },
+  sub: {
+    ...type.caption,
+    color: colors.muted,
+    textAlign: 'right',
+    marginTop: space.xs,
+  },
+  metaRow: { marginTop: space.sm },
+  meta: { ...type.caption, color: colors.primary, textAlign: 'right' },
   scroll: { flex: 1 },
-  container: { padding: 16, paddingBottom: 40 },
-
-  // Header
-  header: { marginBottom: 20 },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: C.text,
-    textAlign: "right",
-    marginBottom: 4,
+  scrollContent: { padding: space.md, paddingBottom: 140 },
+  warnBox: {
+    backgroundColor: '#fffbeb',
+    borderRadius: radius.md,
+    padding: space.md,
+    marginBottom: space.md,
+    borderWidth: 1,
+    borderColor: '#fcd34d',
   },
-  headerSub: { fontSize: 13, color: C.text2, textAlign: "right" },
-
-  // Info Row
-  infoRow: {
-    flexDirection: "row-reverse",
-    gap: 8,
-    marginBottom: 20,
-  },
-  infoCard: {
-    flex: 1,
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 0.5,
-    borderColor: C.border,
-  },
-  infoLabel: { fontSize: 11, color: C.text3, textAlign: "right", marginBottom: 3 },
-  infoValue: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: C.text,
-    textAlign: "right",
-  },
-
-  // Section Title
+  warnTitle: { ...type.headline, color: colors.dark, textAlign: 'right' },
+  warnLine: { ...type.caption, color: '#92400e', textAlign: 'right', marginTop: 4 },
+  suggestSection: { marginBottom: space.lg },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: C.text,
-    textAlign: "right",
-    marginBottom: 12,
+    ...type.headline,
+    color: colors.dark,
+    textAlign: 'right',
+    marginBottom: space.sm,
   },
-
-  // Filters
-  filterScroll: { marginBottom: 12 },
-  filterRow: { flexDirection: "row-reverse", gap: 8, paddingHorizontal: 2 },
-  filterBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 0.5,
-    borderColor: C.border2,
-    backgroundColor: "transparent",
-  },
-  filterBtnActive: { backgroundColor: C.accent, borderColor: C.accent },
-  filterBtnText: { fontSize: 13, fontWeight: "500", color: C.text2 },
-  filterBtnTextActive: { color: "#fff" },
-
-  // Courses Grid
-  coursesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
-
-  // Course Card
-  courseCard: {
-    width: "47%",
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 0.5,
-    borderColor: C.border,
-  },
-  courseCardSelected: {
+  chipRow: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
+  chip: {
+    width: 160,
+    padding: space.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.white,
     borderWidth: 1.5,
-    borderColor: C.accent,
-    backgroundColor: C.accentLight,
+    borderColor: colors.border,
   },
-  cardTop: {
-    flexDirection: "row-reverse",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  courseCode: {
-    fontSize: 11,
-    color: C.text3,
-    fontWeight: "600",
-  },
-  selectToggle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: C.border2,
-    backgroundColor: "transparent",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  selectToggleChecked: { backgroundColor: C.accent, borderColor: C.accent },
-  courseName: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: C.text,
-    textAlign: "right",
-    marginBottom: 10,
-    lineHeight: 20,
-  },
-  courseNameSelected: { color: "#26215C" },
-  courseMeta: {
-    flexDirection: "row-reverse",
-    flexWrap: "wrap",
-    gap: 5,
-    marginBottom: 10,
-  },
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  badgeDept: { backgroundColor: C.blueBg },
-  badgeHours: { backgroundColor: C.greenBg },
-  badgeType: { backgroundColor: C.amberBg },
-  badgeText: { fontSize: 11, fontWeight: "500" },
-  cardActions: { flexDirection: "row-reverse", gap: 8 },
-  btnSelect: {
-    flex: 1,
-    paddingVertical: 7,
-    borderRadius: 8,
-    borderWidth: 0.5,
-    borderColor: C.accent,
-    alignItems: "center",
-  },
-  btnSelectActive: { backgroundColor: C.accent },
-  btnSelectText: { fontSize: 12, fontWeight: "600", color: C.accent },
-  btnSelectTextActive: { color: "#fff" },
-  btnSchedule: {
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 8,
-    borderWidth: 0.5,
-    borderColor: C.border2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  btnScheduleText: { fontSize: 12, fontWeight: "600", color: C.text2 },
-
-  // Summary Bar
-  summaryBar: {
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    borderWidth: 0.5,
-    borderColor: C.border,
-    padding: 16,
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  summaryStats: { flexDirection: "row-reverse", gap: 28 },
-  stat: { alignItems: "center" },
-  statNum: { fontSize: 28, fontWeight: "700", color: C.text },
-  statLabel: { fontSize: 12, color: C.text3 },
-  generateBtn: {
-    backgroundColor: C.accent,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-  },
-  generateBtnDisabled: {
-    backgroundColor: C.surface2,
-    borderWidth: 0.5,
-    borderColor: C.border,
-  },
-  generateBtnText: { fontSize: 14, fontWeight: "700", color: "#fff" },
-  generateBtnTextDisabled: { color: C.text3 },
-
-  // Result Area
-  resultArea: {
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    borderWidth: 0.5,
-    borderColor: C.border,
-    padding: 16,
-    minHeight: 120,
-  },
-  placeholder: {
-    fontSize: 14,
-    color: C.text3,
-    textAlign: "center",
-    paddingVertical: 30,
-  },
-
-  // Pref Step
-  prefTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: C.text,
-    textAlign: "right",
-    marginBottom: 4,
-  },
-  prefSub: {
-    fontSize: 13,
-    color: C.text2,
-    textAlign: "right",
-    marginBottom: 16,
-  },
-  prefOptions: { flexDirection: "row-reverse", gap: 10, marginBottom: 16 },
-  prefCard: {
-    flex: 1,
-    backgroundColor: C.surface2,
-    borderRadius: 12,
-    borderWidth: 0.5,
-    borderColor: C.border2,
-    padding: 12,
-    alignItems: "center",
-  },
-  prefCardSelected: {
-    borderWidth: 1.5,
-    borderColor: C.accent,
-    backgroundColor: C.accentLight,
-  },
-  prefIcon: { fontSize: 24, marginBottom: 6 },
-  prefName: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: C.text,
-    textAlign: "center",
-    marginBottom: 3,
-  },
-  prefDesc: { fontSize: 11, color: C.text2, textAlign: "center" },
-  prefConfirm: {
-    backgroundColor: C.accent,
-    borderRadius: 8,
-    paddingVertical: 11,
-    alignItems: "center",
-  },
-  prefConfirmDisabled: { backgroundColor: C.surface2, borderWidth: 0.5, borderColor: C.border },
-  prefConfirmText: { fontSize: 14, fontWeight: "700", color: "#fff" },
-  prefConfirmTextDisabled: { color: C.text3 },
-
-  // Loading
-  loadingWrap: { alignItems: "center", paddingVertical: 30, gap: 12 },
-  loadingText: { fontSize: 14, color: C.text2 },
-
-  // Error
-  errorWrap: { alignItems: "center", paddingVertical: 20 },
-  errorText: {
-    color: C.error,
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  retryBtn: {
-    borderRadius: 8,
-    borderWidth: 0.5,
-    borderColor: C.border2,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginTop: 12,
-    alignSelf: "flex-end",
-  },
-  retryBtnText: { fontSize: 13, fontWeight: "600", color: C.text2 },
-
-  // Schedule Result
-  scheduleHeader: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  scheduleHeaderTitle: { fontSize: 14, fontWeight: "700", color: C.text },
-  schedulePrefBadge: {
-    backgroundColor: C.accentLight,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 3,
-  },
-  schedulePrefBadgeText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: C.accent,
-  },
-  tableRow: {
-    flexDirection: "row-reverse",
-    borderBottomWidth: 0.5,
-    borderBottomColor: C.border,
-    paddingVertical: 8,
-  },
-  tableHead: { backgroundColor: C.surface2 },
-  tableRowEven: { backgroundColor: C.surface },
-  tableRowOdd: { backgroundColor: C.bg },
-  tableCell: { flex: 1, fontSize: 12, color: C.text, textAlign: "right", paddingHorizontal: 4 },
-  tableHeadCell: { fontWeight: "600", color: C.text2 },
-  resultNotes: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 0.5,
-    borderTopColor: C.border,
-  },
-  resultNotesText: { fontSize: 13, color: C.text2, textAlign: "right", lineHeight: 22 },
-
-  // Modal
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-  },
-  modal: {
-    backgroundColor: C.surface,
-    borderRadius: 12,
-    borderWidth: 0.5,
-    borderColor: C.border,
-    padding: 20,
-    width: "100%",
-    maxWidth: 420,
-    maxHeight: "75%",
-  },
-  modalHeader: {
-    flexDirection: "row-reverse",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-    gap: 8,
-  },
-  modalTitle: { fontSize: 15, fontWeight: "700", color: C.text, textAlign: "right" },
-  modalSubtitle: { fontSize: 12, color: C.text3, textAlign: "right", marginTop: 3 },
-  modalClose: { fontSize: 22, color: C.text3 },
-  slotGroup: { marginBottom: 12 },
-  slotDay: { fontSize: 13, fontWeight: "700", color: C.text, textAlign: "right", marginBottom: 6 },
-  slotTime: {
-    backgroundColor: C.surface2,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginBottom: 4,
-  },
-  slotTimeText: { fontSize: 13, color: C.text2, textAlign: "right" },
-  noSlots: { fontSize: 14, color: C.text3, textAlign: "center", paddingVertical: 20 },
+  chipOn: { borderColor: colors.primary, backgroundColor: '#eff6ff' },
+  chipDisabled: { opacity: 0.45 },
+  chipText: { ...type.micro, fontWeight: '700', color: colors.primary },
+  chipTextOn: { color: colors.primaryDeep },
+  chipName: { ...type.caption, color: colors.dark, textAlign: 'right', marginTop: 4 },
 });

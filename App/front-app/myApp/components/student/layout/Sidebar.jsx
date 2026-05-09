@@ -1,48 +1,53 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRouter, usePathname } from "expo-router";
+import { useAuthLogout } from "@/hooks/useAuthLogout";
 
 const NAV_ITEMS = [
-  { label: "Dashboard",           route: "StudentHome" },
-  { label: "تسجيل المقررات",      route: "Registration" },
-  { label: "جدولي الدراسي",       route: "Schedule" },
-  { label: "النتائج",             route: "Results" },
-  { label: "الرسوم الدراسية",     route: "Fees" },
-  { label: "الملف الشخصي",        route: "Profile" },
-  { label: "تسجيل خروج",         route: "Landing" },
+  { label: "لوحة الطالب", route: "/StudentDashboard" },
+  { label: "تسجيل المقررات", route: "/RegistrationPage" },
+  { label: "جدولي الدراسي", route: "/SchedulePage" },
+  { label: "المساعد الذكي", route: "/ChatScreen" },
 ];
 
 function Sidebar({ open, setOpen }) {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const router = useRouter();
+  const pathname = usePathname();
+  const logout = useAuthLogout();
 
-  const handleNavigate = (targetRoute) => {
+  const handleNavigate = (route) => {
     setOpen(false);
-    navigation.navigate(targetRoute);
+    router.push(route);
+  };
+
+  const handleLogout = async () => {
+    setOpen(false);
+    await logout();
   };
 
   if (!open) return null;
 
   return (
     <>
-      {/* Backdrop — tap outside to close */}
       <TouchableOpacity
         style={styles.backdrop}
         activeOpacity={1}
         onPress={() => setOpen(false)}
+        accessibilityLabel="إغلاق القائمة"
       />
 
-      {/* Drawer panel */}
-      <View style={styles.sidebar}>
+      <View style={styles.sidebar} accessibilityRole="menu">
         <Text style={styles.sidebarTitle}>Student Portal</Text>
 
         <View style={styles.nav}>
           {NAV_ITEMS.map((item) => {
-            const isActive = route.name === item.route;
+            const isActive = pathname.includes(item.route.replace("/", ""));
             return (
               <TouchableOpacity
                 key={item.route}
                 style={[styles.navLink, isActive && styles.navLinkActive]}
                 onPress={() => handleNavigate(item.route)}
+                accessibilityRole="menuitem"
+                hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
               >
                 <Text
                   style={[
@@ -55,6 +60,14 @@ function Sidebar({ open, setOpen }) {
               </TouchableOpacity>
             );
           })}
+          <TouchableOpacity
+            style={styles.logoutLink}
+            onPress={handleLogout}
+            accessibilityRole="menuitem"
+            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+          >
+            <Text style={styles.logoutText}>تسجيل خروج</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </>
@@ -76,9 +89,9 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    width: 260,
+    width: 280,
     backgroundColor: "#0f172a",
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 40,
     zIndex: 2000,
     shadowColor: "#000",
@@ -86,8 +99,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 20,
     elevation: 16,
-    borderTopRightRadius: 28,
-    borderBottomRightRadius: 28,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
   },
   sidebarTitle: {
     fontSize: 18,
@@ -101,12 +114,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   nav: {
-    gap: 6,
+    gap: 8,
   },
   navLink: {
+    minHeight: 48,
+    justifyContent: "center",
     paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     backgroundColor: "rgba(255,255,255,0.02)",
   },
   navLinkActive: {
@@ -125,6 +140,22 @@ const styles = StyleSheet.create({
   },
   navLinkTextActive: {
     color: "#ffffff",
+  },
+  logoutLink: {
+    marginTop: 24,
+    minHeight: 48,
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(248,113,113,0.5)",
+  },
+  logoutText: {
+    color: "#fecaca",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

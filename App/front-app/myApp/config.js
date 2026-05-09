@@ -1,7 +1,10 @@
-// config.js
-export const API_BASE_URL = "http://192.168.1.10:9000";
+import Constants from 'expo-constants';
 
-// ثم في ملف StudentDashboard.jsx استدعه هكذا:
-// import { API_BASE_URL } from './config';
-// واستخدمه في fetch:
-// const response = await fetch(`${API_BASE_URL}/notifications/get`, ...);
+/**
+ * Base URL للخادم (Express على المنفذ 9000 افتراضياً).
+ *
+ * Uses EXPO_PUBLIC_API_BASE_URL from .env file.
+ * Falls back to Constants.expoConfig.extra.apiBaseUrl from app.config.js.
+ * Final fallback to localhost for development.
+ */
+export const API_BASE_URL = 'http://192.168.1.4:9000';

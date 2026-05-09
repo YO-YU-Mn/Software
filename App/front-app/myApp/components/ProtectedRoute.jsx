@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
@@ -56,11 +56,7 @@ function withProtectedRoute(Component) {
   return function ProtectedComponent(props) {
     const { navigation } = props;
 
-    useEffect(() => {
-      checkAuth();
-    }, []);
-
-    async function checkAuth() {
+    const checkAuth = useCallback(async () => {
       try {
         const token = await AsyncStorage.getItem('token');
         
@@ -72,7 +68,11 @@ function withProtectedRoute(Component) {
         console.error('Error checking authentication:', error);
         navigation.replace('Login');
       }
-    }
+    }, [navigation]);
+
+    useEffect(() => {
+      checkAuth();
+    }, [checkAuth]);
 
     return <Component {...props} />;
   };
@@ -80,11 +80,7 @@ function withProtectedRoute(Component) {
 
 // Alternative approach: Hook-based protection
 export function useProtectedRoute(navigation) {
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
+  const checkAuth = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       
@@ -95,7 +91,11 @@ export function useProtectedRoute(navigation) {
       console.error('Error checking authentication:', error);
       navigation.replace('Login');
     }
-  }
+  }, [navigation]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 }
 
 export default withProtectedRoute;
